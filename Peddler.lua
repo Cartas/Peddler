@@ -40,11 +40,16 @@ local function handleItemClick(self, button)
 	local itemID = GetContainerItemID(bagNumber, slotNumber)
 
 	if IsControlKeyDown() and button == 'RightButton' then
-		if ItemsToSell[itemID] then
-			local amountToSell = ItemsToSell[itemID] + 1
-			ItemsToSell[itemID] = amountToSell
-			print("Selling " .. amountToSell .. " x " .. itemID)
-		else
+		if ItemsToSell[itemID] and ItemsToSell[itemID] > 0 then
+			if IsShiftKeyDown() then
+				ItemsToSell[itemID] = 0
+				print("No longer selling " .. itemID)
+			else
+				local amountToSell = ItemsToSell[itemID] + 1
+				ItemsToSell[itemID] = amountToSell
+				print("Selling " .. amountToSell .. " x " .. itemID)
+			end
+		elseif not IsShiftKeyDown() then
 			ItemsToSell[itemID] = 1
 			print("Selling " .. itemID)
 		end
