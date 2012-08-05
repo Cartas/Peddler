@@ -2,6 +2,5 @@
 ## Title: Peddler
 ## Notes: Automatically sells previously designated items!
 ## Author: Cartas @ GrimBatol
-## SavedVariablesPerCharacter: ItemsToSell
 
 Peddler.lua
