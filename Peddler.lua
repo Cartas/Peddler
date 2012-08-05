@@ -1,19 +1,20 @@
 -- Assign global functions to locals for optimisation.
 local GetContainerNumSlots = GetContainerNumSlots
 local GetContainerItemID = GetContainerItemID
+local GetItemInfo = GetItemInfo
+local GetContainerItemInfo = GetContainerItemInfo
 local UseContainerItem = UseContainerItem
 local IsControlKeyDown = IsControlKeyDown
 local next = next
 
 local ItemsToSell = {}
 
-	-- 110631 -> 11g6s31c
 local function priceToGold(price)
 	local gold = price / 10000
 	local silver = (price % 10000) / 100
 	local copper = (price % 10000) % 100
 
-	return math.floor(gold) .. "g" .. math.floor(silver) .. "s" .. math.floor(copper) .. "c"
+	return math.floor(gold) .. "|cFFFFCC33g|r " .. math.floor(silver) .. "|cFFC9C9C9s|r " .. math.floor(copper) .. "|cFFCC8890c|r"
 end
 
 local peddler = CreateFrame("Frame", nil, UIParent)
@@ -45,7 +46,13 @@ local function peddleGoods(self, event, ...)
 				price = price * amount
 
 				total = total + price
-				output = output .. link .. " for " .. priceToGold(price) .. "\n"
+				output = output .. link
+
+				if amount > 1 then
+					output = output .. "x" .. amount
+				end
+
+				output = output .. " for " .. priceToGold(price) .. "\n"
 			end
 		end
 	end
