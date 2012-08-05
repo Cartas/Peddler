@@ -1,6 +1,7 @@
 -- Assign global functions to locals for optimisation.
 local GetContainerNumSlots = GetContainerNumSlots
 local GetContainerItemID = GetContainerItemID
+local GetItemInfo = GetItemInfo
 local UseContainerItem = UseContainerItem
 local IsControlKeyDown = IsControlKeyDown
 local next = next
@@ -11,7 +12,6 @@ local peddler = CreateFrame("Frame", nil, UIParent)
 peddler:RegisterEvent("MERCHANT_SHOW")
 
 local function peddleGoods(self, event, ...)
-	-- No items to be sold, do nothing!
 	if not next(ItemsToSell) then
 		return
 	end
@@ -34,27 +34,30 @@ end
 peddler:SetScript("OnEvent", peddleGoods)
 
 local function handleItemClick(self, button)
+	local usingPeddler = IsControlKeyDown() and button == 'RightButton'
+	if not usingPeddler then
+		return
+	end
+
 	local bagNumber = self:GetParent():GetID()
 	local slotNumber = self:GetID()
 
 	local itemID = GetContainerItemID(bagNumber, slotNumber)
+	local _, itemLink = GetItemInfo(itemID)
 
-	if IsControlKeyDown() and button == 'RightButton' then
-		if ItemsToSell[itemID] and ItemsToSell[itemID] > 0 then
-			if IsShiftKeyDown() then
-				ItemsToSell[itemID] = 0
-				print("No longer selling " .. itemID)
-			else
-				local amountToSell = ItemsToSell[itemID] + 1
-				ItemsToSell[itemID] = amountToSell
-				print("Selling " .. amountToSell .. " x " .. itemID)
-			end
-		elseif not IsShiftKeyDown() then
-			ItemsToSell[itemID] = 1
-			print("Selling " .. itemID)
+	if ItemsToSell[itemID] and ItemsToSell[itemID] > 0 then
+		if IsShiftKeyDown() then
+			ItemsToSell[itemID] = 0
+			print("Peddler: No longer selling " .. itemLink)
+		else
+			local amountToSell = ItemsToSell[itemID] + 1
+			ItemsToSell[itemID] = amountToSell
+			print("Peddler: Selling " .. amountToSell .. " x " .. itemLink)
 		end
+	elseif not IsShiftKeyDown() then
+		ItemsToSell[itemID] = 1
+		print("Peddler: Selling " .. itemLink)
 	end
-
 end
 
 hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", handleItemClick)
