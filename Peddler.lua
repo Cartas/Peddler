@@ -1,7 +1,6 @@
 -- Assign global functions to locals for optimisation.
 local GetContainerNumSlots = GetContainerNumSlots
 local GetContainerItemID = GetContainerItemID
-local GetItemInfo = GetItemInfo
 local UseContainerItem = UseContainerItem
 local IsControlKeyDown = IsControlKeyDown
 local next = next
@@ -20,10 +19,11 @@ local function peddleGoods(self, event, ...)
 		for slotNumber = 1, GetContainerNumSlots(bagNumber) do
 			local itemID = GetContainerItemID(bagNumber, slotNumber)
 
-			local amountToSell = ItemsToSell[itemID]
-			if amountToSell and amountToSell >= 1 then
+			if ItemsToSell[itemID] then
+				local texture = ItemsToSell[itemID]
+				texture:Hide()
+				texture = nil
 				UseContainerItem(bagNumber, slotNumber)
-				ItemsToSell[itemID] = amountToSell - 1
 			end
 		end
 	end
@@ -43,18 +43,18 @@ local function handleItemClick(self, button)
 	local slotNumber = self:GetID()
 
 	local itemID = GetContainerItemID(bagNumber, slotNumber)
-	local _, itemLink = GetItemInfo(itemID)
 
 	if ItemsToSell[itemID] then
+		local texture = ItemsToSell[itemID]
+		texture:Hide()
+		texture = nil
 		ItemsToSell[itemID] = nil
-		print("Peddler: No longer selling " .. itemLink)
 	else
-		ItemsToSell[itemID] = 1
 		local texture = self:CreateTexture(nil, "OVERLAY")
 		texture:SetTexture("Interface\\AddOns\\Peddler\\coins")
 		texture:SetPoint("BOTTOMRIGHT", -3, 1)
 		texture:Show()
-		print("Peddler: Selling " .. itemLink)
+		ItemsToSell[itemID] = texture
 	end
 end
 
