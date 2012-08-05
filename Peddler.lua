@@ -45,17 +45,15 @@ local function handleItemClick(self, button)
 	local itemID = GetContainerItemID(bagNumber, slotNumber)
 	local _, itemLink = GetItemInfo(itemID)
 
-	if ItemsToSell[itemID] and ItemsToSell[itemID] > 0 then
-		if IsShiftKeyDown() then
-			ItemsToSell[itemID] = 0
-			print("Peddler: No longer selling " .. itemLink)
-		else
-			local amountToSell = ItemsToSell[itemID] + 1
-			ItemsToSell[itemID] = amountToSell
-			print("Peddler: Selling " .. amountToSell .. " x " .. itemLink)
-		end
-	elseif not IsShiftKeyDown() then
+	if ItemsToSell[itemID] then
+		ItemsToSell[itemID] = nil
+		print("Peddler: No longer selling " .. itemLink)
+	else
 		ItemsToSell[itemID] = 1
+		local texture = self:CreateTexture(nil, "OVERLAY")
+		texture:SetTexture("Interface\\AddOns\\Peddler\\coins")
+		texture:SetPoint("BOTTOMRIGHT", -3, 1)
+		texture:Show()
 		print("Peddler: Selling " .. itemLink)
 	end
 end
