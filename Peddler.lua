@@ -7,8 +7,6 @@ local UseContainerItem = UseContainerItem
 local IsControlKeyDown = IsControlKeyDown
 local next = next
 
-local ItemsToSell = {}
-
 local function priceToGold(price)
 	local gold = price / 10000
 	local silver = (price % 10000) / 100
@@ -18,9 +16,10 @@ local function priceToGold(price)
 end
 
 local peddler = CreateFrame("Frame", nil, UIParent)
+peddler:RegisterEvent("ADDON_LOADED")
 peddler:RegisterEvent("MERCHANT_SHOW")
 
-local function peddleGoods(self, event, ...)
+local function peddleGoods()
 	if not next(ItemsToSell) then
 		return
 	end
@@ -43,16 +42,18 @@ local function peddleGoods(self, event, ...)
 				local _, link, _, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
 				local _, amount = GetContainerItemInfo(bagNumber, slotNumber)
 
-				price = price * amount
+				if price > 0 then
+					price = price * amount
 
-				total = total + price
-				output = output .. link
+					total = total + price
+					output = output .. link
 
-				if amount > 1 then
-					output = output .. "x" .. amount
+					if amount > 1 then
+						output = output .. "x" .. amount
+					end
+
+					output = output .. " for " .. priceToGold(price) .. "\n"
 				end
-
-				output = output .. " for " .. priceToGold(price) .. "\n"
 			end
 		end
 	end
@@ -63,7 +64,42 @@ local function peddleGoods(self, event, ...)
 	print(output)
 end
 
-peddler:SetScript("OnEvent", peddleGoods)
+local function rememberWares()
+	if not ItemsToSell then
+		ItemsToSell = {}
+	end
+
+	for bagNumber = 0, 4 do
+		local bagsSlotCount = GetContainerNumSlots(bagNumber)
+		for slotNumber = 1, bagsSlotCount do
+			local itemID = GetContainerItemID(bagNumber, slotNumber)
+
+			if ItemsToSell[itemID] then
+				-- It appears there are two ways of finding items!
+				--   Accessing via _G means that bagNumbers are 1-based indices and
+				--   slot numbers start from the bottom-right rather than top-left!
+				local bagButton = _G["ContainerFrame" .. bagNumber + 1]
+				local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
+
+				local texture = itemButton:CreateTexture(nil, "OVERLAY")
+				texture:SetTexture("Interface\\AddOns\\Peddler\\coins")
+				texture:SetPoint("BOTTOMRIGHT", -3, 1)
+				texture:Show()
+				ItemsToSell[itemID] = texture
+			end
+		end
+	end
+end
+
+local function handleEvent(self, event, addonName)
+	if event == "ADDON_LOADED" and addonName == "Peddler" then
+		rememberWares()
+	elseif event == "MERCHANT_SHOW" then
+		peddleGoods()
+	end
+end
+
+peddler:SetScript("OnEvent", handleEvent)
 
 local function handleItemClick(self, button)
 	local usingPeddler = IsControlKeyDown() and button == 'RightButton'
@@ -75,6 +111,14 @@ local function handleItemClick(self, button)
 	local slotNumber = self:GetID()
 
 	local itemID = GetContainerItemID(bagNumber, slotNumber)
+	if not itemID then
+		return
+	end
+
+	local _, link, _, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
+	if price == 0 then
+		return
+	end
 
 	if ItemsToSell[itemID] then
 		local texture = ItemsToSell[itemID]
@@ -86,6 +130,8 @@ local function handleItemClick(self, button)
 		texture:SetTexture("Interface\\AddOns\\Peddler\\coins")
 		texture:SetPoint("BOTTOMRIGHT", -3, 1)
 		texture:Show()
+
+		-- Save the textures in their own, local table?
 		ItemsToSell[itemID] = texture
 	end
 end
