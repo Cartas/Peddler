@@ -2,10 +2,12 @@
 local GetContainerNumSlots = GetContainerNumSlots
 local GetContainerItemID = GetContainerItemID
 local GetItemInfo = GetItemInfo
+local GetItemCount = GetItemCount
 local GetContainerItemInfo = GetContainerItemInfo
 local UseContainerItem = UseContainerItem
 local IsControlKeyDown = IsControlKeyDown
 local next = next
+local Baggins = Baggins
 
 local function priceToGold(price)
 	local gold = price / 10000
@@ -16,43 +18,55 @@ local function priceToGold(price)
 end
 
 local peddler = CreateFrame("Frame", nil, UIParent)
+peddler:RegisterEvent("PLAYER_ENTERING_WORLD")
 peddler:RegisterEvent("ADDON_LOADED")
 peddler:RegisterEvent("MERCHANT_SHOW")
 
 local function peddleGoods()
-	if not next(ItemsToSell) then
-		return
-	end
-
 	local output = "Peddler sold:\n"
 	local total = 0
 
+	foundItems = {}
 	for bagNumber = 0, 4 do
-		for slotNumber = 1, GetContainerNumSlots(bagNumber) do
+		local bagsSlotCount = GetContainerNumSlots(bagNumber)
+		for slotNumber = 1, bagsSlotCount do
 			local itemID = GetContainerItemID(bagNumber, slotNumber)
 
-			if ItemsToSell[itemID] then
-				local texture = ItemsToSell[itemID]
-				texture:Hide()
-				texture = nil
-				ItemsToSell[itemID] = nil
+			if itemID then
+				local _, link, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
 
-				UseContainerItem(bagNumber, slotNumber)
+				if ItemsToSell[itemID] then
+					local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
 
-				local _, link, _, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
-				local _, amount = GetContainerItemInfo(bagNumber, slotNumber)
-
-				if price > 0 then
-					price = price * amount
-
-					total = total + price
-					output = output .. link
-
-					if amount > 1 then
-						output = output .. "x" .. amount
+					if itemButton.coins then
+						itemButton.coins:Hide()
 					end
 
-					output = output .. " for " .. priceToGold(price) .. "\n"
+					ItemsToSell[itemID] = ItemsToSell[itemID] - 1
+
+					if foundItems[itemID] then
+						foundItems[itemID] = foundItems[itemID] + 1
+					else
+						foundItems[itemID] = 1
+					end
+
+					local _, amount = GetContainerItemInfo(bagNumber, slotNumber)
+
+					if price > 0 then
+						price = price * amount
+
+						total = total + price
+						output = output .. link
+
+						if amount > 1 then
+							output = output .. "x" .. amount
+						end
+
+						output = output .. " for " .. priceToGold(price) .. "\n"
+					end
+
+					-- Actually sell the item!
+					UseContainerItem(bagNumber, slotNumber)
 				end
 			end
 		end
@@ -60,40 +74,96 @@ local function peddleGoods()
 
 	ItemsToSell = {}
 
-	output = output .. "\nFor a total of " .. priceToGold(total)
-	print(output)
+	if total > 0 then
+		output = output .. "\nFor a total of " .. priceToGold(total)
+		print(output)
+	end
 end
 
-local function rememberWares()
-	if not ItemsToSell then
-		ItemsToSell = {}
+local function showCoinTexture(itemButton)
+	if not itemButton.coins then
+		local texture = itemButton:CreateTexture(nil, "OVERLAY")
+		texture:SetTexture("Interface\\AddOns\\Peddler\\coins")
+		texture:SetPoint("BOTTOMRIGHT", -3, 1)
+
+		itemButton.coins = texture
 	end
 
+	itemButton.coins:Show()
+end
+
+local function markNormalBags()
+	-- We want to track how many items we've marked for each itemID, to match the quantity wanting to be sold...
+	foundItemCounts = {}
 	for bagNumber = 0, 4 do
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
 		for slotNumber = 1, bagsSlotCount do
+			-- It appears there are two ways of finding items!
+			--   Accessing via _G means that bagNumbers are 1-based indices and
+			--   slot numbers start from the bottom-right rather than top-left!
+			local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
 			local itemID = GetContainerItemID(bagNumber, slotNumber)
 
-			if ItemsToSell[itemID] then
-				-- It appears there are two ways of finding items!
-				--   Accessing via _G means that bagNumbers are 1-based indices and
-				--   slot numbers start from the bottom-right rather than top-left!
-				local bagButton = _G["ContainerFrame" .. bagNumber + 1]
-				local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
+			if itemID and ItemsToSell[itemID] then
+				if foundItemCounts[itemID] then
+					--if foundItemCounts[itemID] < ItemsToSell[itemID] then
+						showCoinTexture(itemButton)
+					--elseif itemButton.coins then
+					--	itemButton.coins:Hide()
+					--end
+				end
 
-				local texture = itemButton:CreateTexture(nil, "OVERLAY")
-				texture:SetTexture("Interface\\AddOns\\Peddler\\coins")
-				texture:SetPoint("BOTTOMRIGHT", -3, 1)
-				texture:Show()
-				ItemsToSell[itemID] = texture
+				if not foundItemCounts[itemID] then
+					showCoinTexture(itemButton)
+					foundItemCounts[itemID] = 1
+				else
+					foundItemCounts[itemID] = foundItemCounts[itemID] + 1
+				end
+			elseif itemButton.coins then
+				itemButton.coins:Hide()
+				itemButton.coins = nil
 			end
 		end
 	end
 end
 
+local function markBagginsBags()
+	for bagid, bag in ipairs(Baggins.bagframes) do
+		for sectionid, section in ipairs(bag.sections) do
+			for buttonid, button in ipairs(section.items) do
+				local bagNumber = button:GetParent():GetID()
+				local slotNumber = button:GetID()
+
+				local itemID = GetContainerItemID(bagNumber, slotNumber)
+
+				if itemID and ItemsToSell[itemID] then
+					showCoinTexture(button)
+				end
+			end
+		end
+	end
+end
+
+local function markWares()
+	if not ItemsToSell then
+		ItemsToSell = {}
+	end
+
+	if Baggins then
+		markBagginsBags()
+	else
+		markNormalBags()
+	end
+end
+
 local function handleEvent(self, event, addonName)
 	if event == "ADDON_LOADED" and addonName == "Peddler" then
-		rememberWares()
+		peddler:UnregisterEvent("ADDON_LOADED")
+		markWares()
+	elseif event == "PLAYER_ENTERING_WORLD" then
+		peddler:RegisterEvent("BAG_UPDATE")
+	elseif event == "BAG_UPDATE" then
+		markWares()
 	elseif event == "MERCHANT_SHOW" then
 		peddleGoods()
 	end
@@ -120,20 +190,33 @@ local function handleItemClick(self, button)
 		return
 	end
 
+	--[[
 	if ItemsToSell[itemID] then
-		local texture = ItemsToSell[itemID]
-		texture:Hide()
-		texture = nil
+		if not self.coins or not self.coins:IsVisible()  then
+			-- Selling another of the same item...
+			showCoinTexture(self)
+			ItemsToSell[itemID] = ItemsToSell[itemID] + 1
+		else
+			self.coins:Hide()
+			ItemsToSell[itemID] = ItemsToSell[itemID] - 1
+		end
+
+		if ItemsToSell[itemID] == 0 then
+			ItemsToSell[itemID] = nil
+		end
+	else
+		showCoinTexture(self)
+		ItemsToSell[itemID] = 1
+	end
+	--]]
+
+	if ItemsToSell[itemID] then
 		ItemsToSell[itemID] = nil
 	else
-		local texture = self:CreateTexture(nil, "OVERLAY")
-		texture:SetTexture("Interface\\AddOns\\Peddler\\coins")
-		texture:SetPoint("BOTTOMRIGHT", -3, 1)
-		texture:Show()
-
-		-- Save the textures in their own, local table?
-		ItemsToSell[itemID] = texture
+		ItemsToSell[itemID] = 1
 	end
+
+	markWares()
 end
 
 hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", handleItemClick)
