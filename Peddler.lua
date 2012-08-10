@@ -93,6 +93,10 @@ local function showCoinTexture(itemButton)
 end
 
 local function checkItem(bagNumber, slotNumber, itemButton)
+	if peddler:IsEventRegistered("BAG_UPDATE_COOLDOWN") then
+		peddler:UnregisterEvent("BAG_UPDATE_COOLDOWN")
+	end
+
 	local itemID = GetContainerItemID(bagNumber, slotNumber)
 	if itemID and ItemsToSell[itemID] then
 		showCoinTexture(itemButton)
