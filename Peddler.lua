@@ -102,19 +102,6 @@ local function checkItem(bagNumber, slotNumber, itemButton)
 	end
 end
 
-local function markNormalBags()
-	for bagNumber = 0, 4 do
-		local bagsSlotCount = GetContainerNumSlots(bagNumber)
-		for slotNumber = 1, bagsSlotCount do
-			-- It appears there are two ways of finding items!
-			--   Accessing via _G means that bagNumbers are 1-based indices and
-			--   slot numbers start from the bottom-right rather than top-left!
-			local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
-			checkItem(bagNumber, slotNumber, itemButton)
-		end
-	end
-end
-
 local bagginsInitialisationTimer
 local bagginsInitialised = false
 
@@ -144,17 +131,47 @@ local function initBaggins()
 	end
 end
 
+local function markCombuctorBags()
+	print(_G["Combuctor"].bags)
+	for _,frame in pairs(Combuctor.frames) do
+		for _,bagID in pairs(frame.sets.bags) do
+			for slot = 1, Combuctor:GetBagSize(bag) do
+				local item = self.items[ToIndex(bag, slot)]
+				print(item)
+			end
+		end
+	end
+end
+
+local function markNormalBags()
+	for bagNumber = 0, 4 do
+		local bagsSlotCount = GetContainerNumSlots(bagNumber)
+		for slotNumber = 1, bagsSlotCount do
+			-- It appears there are two ways of finding items!
+			--   Accessing via _G means that bagNumbers are 1-based indices and
+			--   slot numbers start from the bottom-right rather than top-left!
+			local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
+			checkItem(bagNumber, slotNumber, itemButton)
+		end
+	end
+end
+
 local function markWares()
 	if not ItemsToSell then
 		ItemsToSell = {}
 	end
 
-	if Baggins then
-		markBagginsBags()
-	elseif CombuctorDB2 then
-		markCombuctorBags()
-	else
-		markNormalBags()
+	for bag = NUM_BAG_FRAMES, 0, -1 do
+		for slot = GetContainerNumSlots(bag), 1, -1 do
+			local slots = GetContainerNumSlots(bag)
+			local itemButton = _G['ContainerFrame' .. bag + 1 .. 'Item' .. slots - slot + 1]
+			local itemID = GetContainerItemID(bag, slot)
+			if ItemsToSell[itemID] then
+				showCoinTexture(itemButton)
+			elseif itemButton.coins then
+				itemButton.coins:Hide()
+			end
+		end
 	end
 end
 
