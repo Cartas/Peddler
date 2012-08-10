@@ -98,19 +98,10 @@ local function checkItem(bagNumber, slotNumber, itemButton)
 		showCoinTexture(itemButton)
 	elseif itemButton.coins then
 		itemButton.coins:Hide()
-		itemButton.coins = nil
 	end
 end
 
-local bagginsInitialisationTimer
-local bagginsInitialised = false
-
 local function markBagginsBags()
-	if bagginsInitialisationTimer then
-		bagginsInitialisationTimer:SetScript("OnUpdate", nil)
-		bagginsInitialisationTimer = nil
-	end
-
 	for bagid, bag in ipairs(Baggins.bagframes) do
 		for sectionid, section in ipairs(bag.sections) do
 			for buttonid, itemButton in ipairs(section.items) do
@@ -123,22 +114,14 @@ local function markBagginsBags()
 	end
 end
 
-local function initBaggins()
-	if not bagginsInitialised then
-		bagginsInitialisationTimer = CreateFrame("Frame")
-		bagginsInitialisationTimer:SetScript("OnUpdate", markBagginsBags)
-		bagginsInitialised = true
-	end
-end
-
 local function markCombuctorBags()
-	print(_G["Combuctor"].bags)
-	for _,frame in pairs(Combuctor.frames) do
-		for _,bagID in pairs(frame.sets.bags) do
-			for slot = 1, Combuctor:GetBagSize(bag) do
-				local item = self.items[ToIndex(bag, slot)]
-				print(item)
-			end
+	for bagNumber = 0, 4 do
+		for slotNumber = 1, 36 do
+			local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. slotNumber]
+
+			local bagNumber = itemButton:GetParent():GetID()
+			local slotNumber = itemButton:GetID()
+			checkItem(bagNumber, slotNumber, itemButton)
 		end
 	end
 end
@@ -161,17 +144,12 @@ local function markWares()
 		ItemsToSell = {}
 	end
 
-	for bag = NUM_BAG_FRAMES, 0, -1 do
-		for slot = GetContainerNumSlots(bag), 1, -1 do
-			local slots = GetContainerNumSlots(bag)
-			local itemButton = _G['ContainerFrame' .. bag + 1 .. 'Item' .. slots - slot + 1]
-			local itemID = GetContainerItemID(bag, slot)
-			if ItemsToSell[itemID] then
-				showCoinTexture(itemButton)
-			elseif itemButton.coins then
-				itemButton.coins:Hide()
-			end
-		end
+	if IsAddOnLoaded("Baggins") then
+		markBagginsBags()
+	elseif IsAddOnLoaded("Combuctor") or IsAddOnLoaded("Bagnon") then
+		markCombuctorBags()
+	else
+		markNormalBags()
 	end
 end
 
@@ -179,14 +157,16 @@ local function handleEvent(self, event, addonName)
 	if event == "ADDON_LOADED" and addonName == "Peddler" then
 		peddler:UnregisterEvent("ADDON_LOADED")
 
-		if Baggins then
-			Baggins:RegisterSignal("Baggins_BagOpened", initBaggins, Baggins)
+		if IsAddOnLoaded("Baggins") or IsAddOnLoaded("Combuctor") or IsAddOnLoaded("Bagnon") then
+			peddler:RegisterEvent("BAG_UPDATE_COOLDOWN")
 		else
 			markWares()
 		end
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		peddler:RegisterEvent("BAG_UPDATE")
 	elseif event == "BAG_UPDATE" then
+		markWares()
+	elseif event == "BAG_UPDATE_COOLDOWN" then
 		markWares()
 	elseif event == "MERCHANT_SHOW" then
 		peddleGoods()
