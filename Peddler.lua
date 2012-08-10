@@ -92,9 +92,17 @@ local function showCoinTexture(itemButton)
 	itemButton.coins:Show()
 end
 
+local function checkItem(bagNumber, slotNumber, itemButton)
+	local itemID = GetContainerItemID(bagNumber, slotNumber)
+	if itemID and ItemsToSell[itemID] then
+		showCoinTexture(itemButton)
+	elseif itemButton.coins then
+		itemButton.coins:Hide()
+		itemButton.coins = nil
+	end
+end
+
 local function markNormalBags()
-	-- We want to track how many items we've marked for each itemID, to match the quantity wanting to be sold...
-	foundItemCounts = {}
 	for bagNumber = 0, 4 do
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
 		for slotNumber = 1, bagsSlotCount do
@@ -102,45 +110,37 @@ local function markNormalBags()
 			--   Accessing via _G means that bagNumbers are 1-based indices and
 			--   slot numbers start from the bottom-right rather than top-left!
 			local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
-			local itemID = GetContainerItemID(bagNumber, slotNumber)
+			checkItem(bagNumber, slotNumber, itemButton)
+		end
+	end
+end
 
-			if itemID and ItemsToSell[itemID] then
-				if foundItemCounts[itemID] then
-					--if foundItemCounts[itemID] < ItemsToSell[itemID] then
-						showCoinTexture(itemButton)
-					--elseif itemButton.coins then
-					--	itemButton.coins:Hide()
-					--end
-				end
+local bagginsInitialisationTimer
+local bagginsInitialised = false
 
-				if not foundItemCounts[itemID] then
-					showCoinTexture(itemButton)
-					foundItemCounts[itemID] = 1
-				else
-					foundItemCounts[itemID] = foundItemCounts[itemID] + 1
-				end
-			elseif itemButton.coins then
-				itemButton.coins:Hide()
-				itemButton.coins = nil
+local function markBagginsBags()
+	if bagginsInitialisationTimer then
+		bagginsInitialisationTimer:SetScript("OnUpdate", nil)
+		bagginsInitialisationTimer = nil
+	end
+
+	for bagid, bag in ipairs(Baggins.bagframes) do
+		for sectionid, section in ipairs(bag.sections) do
+			for buttonid, itemButton in ipairs(section.items) do
+				local bagNumber = itemButton:GetParent():GetID()
+				local slotNumber = itemButton:GetID()
+
+				checkItem(bagNumber, slotNumber, itemButton)
 			end
 		end
 	end
 end
 
-local function markBagginsBags()
-	for bagid, bag in ipairs(Baggins.bagframes) do
-		for sectionid, section in ipairs(bag.sections) do
-			for buttonid, button in ipairs(section.items) do
-				local bagNumber = button:GetParent():GetID()
-				local slotNumber = button:GetID()
-
-				local itemID = GetContainerItemID(bagNumber, slotNumber)
-
-				if itemID and ItemsToSell[itemID] then
-					showCoinTexture(button)
-				end
-			end
-		end
+local function initBaggins()
+	if not bagginsInitialised then
+		bagginsInitialisationTimer = CreateFrame("Frame")
+		bagginsInitialisationTimer:SetScript("OnUpdate", markBagginsBags)
+		bagginsInitialised = true
 	end
 end
 
@@ -151,6 +151,8 @@ local function markWares()
 
 	if Baggins then
 		markBagginsBags()
+	elseif CombuctorDB2 then
+		markCombuctorBags()
 	else
 		markNormalBags()
 	end
@@ -159,7 +161,12 @@ end
 local function handleEvent(self, event, addonName)
 	if event == "ADDON_LOADED" and addonName == "Peddler" then
 		peddler:UnregisterEvent("ADDON_LOADED")
-		markWares()
+
+		if Baggins then
+			Baggins:RegisterSignal("Baggins_BagOpened", initBaggins, Baggins)
+		else
+			markWares()
+		end
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		peddler:RegisterEvent("BAG_UPDATE")
 	elseif event == "BAG_UPDATE" then
@@ -189,26 +196,6 @@ local function handleItemClick(self, button)
 	if price == 0 then
 		return
 	end
-
-	--[[
-	if ItemsToSell[itemID] then
-		if not self.coins or not self.coins:IsVisible()  then
-			-- Selling another of the same item...
-			showCoinTexture(self)
-			ItemsToSell[itemID] = ItemsToSell[itemID] + 1
-		else
-			self.coins:Hide()
-			ItemsToSell[itemID] = ItemsToSell[itemID] - 1
-		end
-
-		if ItemsToSell[itemID] == 0 then
-			ItemsToSell[itemID] = nil
-		end
-	else
-		showCoinTexture(self)
-		ItemsToSell[itemID] = 1
-	end
-	--]]
 
 	if ItemsToSell[itemID] then
 		ItemsToSell[itemID] = nil
