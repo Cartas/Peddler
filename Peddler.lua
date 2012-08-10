@@ -105,10 +105,10 @@ local function markBagginsBags()
 	for bagid, bag in ipairs(Baggins.bagframes) do
 		for sectionid, section in ipairs(bag.sections) do
 			for buttonid, itemButton in ipairs(section.items) do
-				local bagNumber = itemButton:GetParent():GetID()
-				local slotNumber = itemButton:GetID()
+				local itemsBagNumber = itemButton:GetParent():GetID()
+				local itemsSlotNumber = itemButton:GetID()
 
-				checkItem(bagNumber, slotNumber, itemButton)
+				checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
 			end
 		end
 	end
@@ -119,9 +119,24 @@ local function markCombuctorBags()
 		for slotNumber = 1, 36 do
 			local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. slotNumber]
 
-			local bagNumber = itemButton:GetParent():GetID()
-			local slotNumber = itemButton:GetID()
-			checkItem(bagNumber, slotNumber, itemButton)
+			local itemsBagNumber = itemButton:GetParent():GetID()
+			local itemsSlotNumber = itemButton:GetID()
+			checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+		end
+	end
+end
+
+local function markOneBagBags()
+	for bagNumber = 0, 4 do
+		local bagsSlotCount = GetContainerNumSlots(bagNumber)
+		for slotNumber = 1, bagsSlotCount do
+			local itemButton = _G["OneBagFrameBag" .. bagNumber .. "Item" .. bagsSlotCount - slotNumber + 1]
+
+			if itemButton then
+				local itemsBagNumber = itemButton:GetParent():GetID()
+				local itemsSlotNumber = itemButton:GetID()
+				checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+			end
 		end
 	end
 end
@@ -148,6 +163,8 @@ local function markWares()
 		markBagginsBags()
 	elseif IsAddOnLoaded("Combuctor") or IsAddOnLoaded("Bagnon") then
 		markCombuctorBags()
+	elseif IsAddOnLoaded("OneBag3") then
+		markOneBagBags()
 	else
 		markNormalBags()
 	end
@@ -157,7 +174,7 @@ local function handleEvent(self, event, addonName)
 	if event == "ADDON_LOADED" and addonName == "Peddler" then
 		peddler:UnregisterEvent("ADDON_LOADED")
 
-		if IsAddOnLoaded("Baggins") or IsAddOnLoaded("Combuctor") or IsAddOnLoaded("Bagnon") then
+		if IsAddOnLoaded("Baggins") or IsAddOnLoaded("Combuctor") or IsAddOnLoaded("Bagnon") or IsAddOnLoaded("OneBag3") then
 			peddler:RegisterEvent("BAG_UPDATE_COOLDOWN")
 		else
 			markWares()
