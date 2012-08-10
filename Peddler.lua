@@ -131,18 +131,6 @@ local function initBaggins()
 	end
 end
 
-local function markCombuctorBags()
-	print(_G["Combuctor"].bags)
-	for _,frame in pairs(Combuctor.frames) do
-		for _,bagID in pairs(frame.sets.bags) do
-			for slot = 1, Combuctor:GetBagSize(bag) do
-				local item = self.items[ToIndex(bag, slot)]
-				print(item)
-			end
-		end
-	end
-end
-
 local function markNormalBags()
 	for bagNumber = 0, 4 do
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
@@ -161,17 +149,10 @@ local function markWares()
 		ItemsToSell = {}
 	end
 
-	for bag = NUM_BAG_FRAMES, 0, -1 do
-		for slot = GetContainerNumSlots(bag), 1, -1 do
-			local slots = GetContainerNumSlots(bag)
-			local itemButton = _G['ContainerFrame' .. bag + 1 .. 'Item' .. slots - slot + 1]
-			local itemID = GetContainerItemID(bag, slot)
-			if ItemsToSell[itemID] then
-				showCoinTexture(itemButton)
-			elseif itemButton.coins then
-				itemButton.coins:Hide()
-			end
-		end
+	if IsAddOnLoaded("Baggins") then
+		markBagginsBags()
+	else
+		markNormalBags()
 	end
 end
 
