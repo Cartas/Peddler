@@ -96,6 +96,13 @@ local function showCoinTexture(itemButton)
 
 	peddler:SetScript("OnUpdate", nil)
 	markCounter = 0
+
+	if IsAddOnLoaded("Baggins") then
+		-- Baggins updates slower than the others, so we have to account for that.
+		countLimit = 30
+	else
+		countLimit = 1
+	end
 end
 
 local function checkItem(bagNumber, slotNumber, itemButton)
@@ -164,10 +171,6 @@ local function markNormalBags()
 end
 
 local function markWares()
-	if not ItemsToSell then
-		ItemsToSell = {}
-	end
-
 	if IsAddOnLoaded("Baggins") then
 		markBagginsBags()
 	elseif IsAddOnLoaded("Combuctor") or IsAddOnLoaded("Bagnon") then
@@ -198,11 +201,17 @@ end
 local function handleEvent(self, event, addonName)
 	if event == "ADDON_LOADED" and addonName == "Peddler" then
 		peddler:UnregisterEvent("ADDON_LOADED")
-		peddler:SetScript("OnUpdate", onUpdate)
+
+		if not ItemsToSell then
+			ItemsToSell = {}
+		end
+
+		if next(ItemsToSell) then
+			countLimit = 400
+			peddler:SetScript("OnUpdate", onUpdate)
+		end
 
 		if IsAddOnLoaded("Baggins") then
-			-- Baggins updates slower than the others, so we have to account for that.
-			countLimit = 30
 			Baggins:RegisterSignal("Baggins_BagOpened", handleBagginsOpened, Baggins)
 		end
 	elseif event == "PLAYER_ENTERING_WORLD" then
