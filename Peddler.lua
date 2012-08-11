@@ -190,11 +190,9 @@ local function handleEvent(self, event, addonName)
 		peddler:UnregisterEvent("ADDON_LOADED")
 		peddler:SetScript("OnUpdate", onUpdate)
 	elseif event == "PLAYER_ENTERING_WORLD" then
-		peddler:RegisterEvent("BAG_UPDATE")
-	elseif event == "BAG_UPDATE" then
-		if markCounter == 0 then
-			peddler:SetScript("OnUpdate", onUpdate)
-		end
+		peddler:RegisterEvent("ITEM_UNLOCKED")
+	elseif event == "ITEM_UNLOCKED" then
+		markWares()
 	elseif event == "MERCHANT_SHOW" then
 		peddleGoods()
 	end
