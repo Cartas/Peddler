@@ -201,6 +201,8 @@ local function handleEvent(self, event, addonName)
 		peddler:SetScript("OnUpdate", onUpdate)
 
 		if IsAddOnLoaded("Baggins") then
+			-- Baggins updates slower than the others, so we have to account for that.
+			countLimit = 30
 			Baggins:RegisterSignal("Baggins_BagOpened", handleBagginsOpened, Baggins)
 		end
 	elseif event == "PLAYER_ENTERING_WORLD" then
