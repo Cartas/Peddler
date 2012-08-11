@@ -18,6 +18,7 @@ local function priceToGold(price)
 end
 
 local peddler = CreateFrame("Frame", nil, UIParent)
+local markCounter = 1
 peddler:RegisterEvent("PLAYER_ENTERING_WORLD")
 peddler:RegisterEvent("ADDON_LOADED")
 peddler:RegisterEvent("MERCHANT_SHOW")
@@ -90,6 +91,9 @@ local function showCoinTexture(itemButton)
 	end
 
 	itemButton.coins:Show()
+
+	peddler:SetScript("OnUpdate", nil)
+	markCounter = 0
 end
 
 local function checkItem(bagNumber, slotNumber, itemButton)
@@ -170,21 +174,26 @@ local function markWares()
 	end
 end
 
+local function onUpdate()
+	markCounter = markCounter + 1
+	if markCounter <= 30 then
+		return
+	else
+		markCounter = 0
+		markWares()
+	end
+end
+
 local function handleEvent(self, event, addonName)
 	if event == "ADDON_LOADED" and addonName == "Peddler" then
 		peddler:UnregisterEvent("ADDON_LOADED")
-
-		if IsAddOnLoaded("Baggins") or IsAddOnLoaded("Combuctor") or IsAddOnLoaded("Bagnon") or IsAddOnLoaded("OneBag3") then
-			peddler:RegisterEvent("BAG_UPDATE_COOLDOWN")
-		else
-			markWares()
-		end
+		peddler:SetScript("OnUpdate", onUpdate)
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		peddler:RegisterEvent("BAG_UPDATE")
 	elseif event == "BAG_UPDATE" then
-		markWares()
-	elseif event == "BAG_UPDATE_COOLDOWN" then
-		markWares()
+		if markCounter == 0 then
+			peddler:SetScript("OnUpdate", onUpdate)
+		end
 	elseif event == "MERCHANT_SHOW" then
 		peddleGoods()
 	end
