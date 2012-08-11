@@ -122,10 +122,11 @@ local function markCombuctorBags()
 	for bagNumber = 0, 4 do
 		for slotNumber = 1, 36 do
 			local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. slotNumber]
-
-			local itemsBagNumber = itemButton:GetParent():GetID()
-			local itemsSlotNumber = itemButton:GetID()
-			checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+			if itemButton:GetParent() then
+				local itemsBagNumber = itemButton:GetParent():GetID()
+				local itemsSlotNumber = itemButton:GetID()
+				checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+			end
 		end
 	end
 end
