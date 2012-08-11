@@ -191,7 +191,8 @@ local function handleEvent(self, event, addonName)
 		peddler:SetScript("OnUpdate", onUpdate)
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		peddler:RegisterEvent("ITEM_UNLOCKED")
-	elseif event == "ITEM_UNLOCKED" then
+		peddler:RegisterEvent("BAG_UPDATE")
+	elseif event == "ITEM_UNLOCKED" or "BAG_UPDATE" then
 		markWares()
 	elseif event == "MERCHANT_SHOW" then
 		peddleGoods()
