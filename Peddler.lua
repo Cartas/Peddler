@@ -19,6 +19,8 @@ end
 
 local peddler = CreateFrame("Frame", nil, UIParent)
 local markCounter = 1
+local countLimit = 1
+
 peddler:RegisterEvent("PLAYER_ENTERING_WORLD")
 peddler:RegisterEvent("ADDON_LOADED")
 peddler:RegisterEvent("MERCHANT_SHOW")
@@ -179,7 +181,7 @@ end
 
 local function onUpdate()
 	markCounter = markCounter + 1
-	if markCounter <= 30 then
+	if markCounter <= countLimit then
 		return
 	else
 		markCounter = 0
@@ -187,10 +189,20 @@ local function onUpdate()
 	end
 end
 
+local function handleBagginsOpened()
+	if markCounter == 0 then
+		peddler:SetScript("OnUpdate", onUpdate)
+	end
+end
+
 local function handleEvent(self, event, addonName)
 	if event == "ADDON_LOADED" and addonName == "Peddler" then
 		peddler:UnregisterEvent("ADDON_LOADED")
 		peddler:SetScript("OnUpdate", onUpdate)
+
+		if IsAddOnLoaded("Baggins") then
+			Baggins:RegisterSignal("Baggins_BagOpened", handleBagginsOpened, Baggins)
+		end
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		peddler:RegisterEvent("BAG_UPDATE")
 	elseif event == "BAG_UPDATE" then
