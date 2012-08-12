@@ -29,7 +29,6 @@ local function peddleGoods()
 	local output = "Peddler sold:\n"
 	local total = 0
 
-	foundItems = {}
 	for bagNumber = 0, 4 do
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
 		for slotNumber = 1, bagsSlotCount do
@@ -38,19 +37,11 @@ local function peddleGoods()
 			if itemID then
 				local _, link, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
 
-				if ItemsToSell[itemID] then
+				if ItemsToSell[itemID] or (quality == 0 and not UnmarkedGrayItems[itemID]) then
 					local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
 
 					if itemButton.coins then
 						itemButton.coins:Hide()
-					end
-
-					ItemsToSell[itemID] = ItemsToSell[itemID] - 1
-
-					if foundItems[itemID] then
-						foundItems[itemID] = foundItems[itemID] + 1
-					else
-						foundItems[itemID] = 1
 					end
 
 					local _, amount = GetContainerItemInfo(bagNumber, slotNumber)
@@ -107,8 +98,14 @@ end
 
 local function checkItem(bagNumber, slotNumber, itemButton)
 	local itemID = GetContainerItemID(bagNumber, slotNumber)
-	if itemID and ItemsToSell[itemID] then
-		showCoinTexture(itemButton)
+
+	if itemID then
+		local _, _, quality = GetItemInfo(itemID)
+		if ItemsToSell[itemID] or (quality == 0 and not UnmarkedGrayItems[itemID]) then
+			showCoinTexture(itemButton)
+		elseif itemButton.coins then
+			itemButton.coins:Hide()
+		end
 	elseif itemButton.coins then
 		itemButton.coins:Hide()
 	end
@@ -206,10 +203,12 @@ local function handleEvent(self, event, addonName)
 			ItemsToSell = {}
 		end
 
-		if next(ItemsToSell) then
-			countLimit = 400
-			peddler:SetScript("OnUpdate", onUpdate)
+		if not UnmarkedGrayItems then
+			UnmarkedGrayItems = {}
 		end
+
+		countLimit = 400
+		peddler:SetScript("OnUpdate", onUpdate)
 
 		if IsAddOnLoaded("Baggins") then
 			Baggins:RegisterSignal("Baggins_BagOpened", handleBagginsOpened, Baggins)
@@ -241,12 +240,18 @@ local function handleItemClick(self, button)
 		return
 	end
 
-	local _, link, _, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
+	local _, link, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
 	if price == 0 then
 		return
 	end
 
-	if ItemsToSell[itemID] then
+	if quality == 0 then
+		if UnmarkedGrayItems[itemID] then
+			UnmarkedGrayItems[itemID] = nil
+		else
+			UnmarkedGrayItems[itemID] = 1
+		end
+	elseif ItemsToSell[itemID] then
 		ItemsToSell[itemID] = nil
 	else
 		ItemsToSell[itemID] = 1
