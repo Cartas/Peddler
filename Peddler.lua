@@ -9,6 +9,7 @@ local IsControlKeyDown = IsControlKeyDown
 local next = next
 local Baggins = Baggins
 
+-- Turns an integer value into the format "Xg Ys Zc".
 local function priceToGold(price)
 	local gold = price / 10000
 	local silver = (price % 10000) / 100
@@ -45,7 +46,7 @@ local function peddleGoods()
 
 					local _, amount = GetContainerItemInfo(bagNumber, slotNumber)
 
-					if price > 0 then
+					if price > 0 and not Silent then
 						price = price * amount
 
 						if total == 0 then
@@ -70,7 +71,7 @@ local function peddleGoods()
 		end
 	end
 
-	if total > 0 then
+	if total > 0 and not Silent then
 		print("For a total of " .. priceToGold(total))
 	end
 end
@@ -125,6 +126,7 @@ local function markBagginsBags()
 	end
 end
 
+-- Also works for Bagnon.
 local function markCombuctorBags()
 	for bagNumber = 0, 4 do
 		for slotNumber = 1, 36 do
@@ -155,6 +157,7 @@ local function markOneBagBags()
 	end
 end
 
+-- Also works for bBag.
 local function markNormalBags()
 	for bagNumber = 0, 4 do
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
@@ -262,3 +265,13 @@ local function handleItemClick(self, button)
 end
 
 hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", handleItemClick)
+
+-- Handling Peddler's options.
+SLASH_PEDDLER_COMMAND1 = '/peddler'
+SlashCmdList['PEDDLER_COMMAND'] = function(command)
+	if command == 'silent' then
+		Silent = not Silent
+	else
+		print('"/peddler silent" [' .. (Silent and '|cFF00CC00ON|r' or '|cFFCF0000OFF') .. '|r]  - Silence chat output about prices and sold item information.')
+	end
+end
