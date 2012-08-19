@@ -26,7 +26,6 @@ peddler:RegisterEvent("ADDON_LOADED")
 peddler:RegisterEvent("MERCHANT_SHOW")
 
 local function peddleGoods()
-	local output = "Peddler sold:\n"
 	local total = 0
 
 	for bagNumber = 0, 4 do
@@ -49,14 +48,19 @@ local function peddleGoods()
 					if price > 0 then
 						price = price * amount
 
+						if total == 0 then
+							print("Peddler sold:")
+						end
+
 						total = total + price
-						output = output .. link
+						local output = "    " .. link
 
 						if amount > 1 then
 							output = output .. "x" .. amount
 						end
 
-						output = output .. " for " .. priceToGold(price) .. "\n"
+						output = output .. " for " .. priceToGold(price)
+						print(output)
 					end
 
 					-- Actually sell the item!
@@ -66,11 +70,8 @@ local function peddleGoods()
 		end
 	end
 
-	ItemsToSell = {}
-
 	if total > 0 then
-		output = output .. "\nFor a total of " .. priceToGold(total)
-		print(output)
+		print("For a total of " .. priceToGold(total))
 	end
 end
 
