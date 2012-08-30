@@ -157,6 +157,16 @@ local function markOneBagBags()
 	end
 end
 
+local function markBaudBagBags()
+	for bagNumber = 0, 4 do
+		local bagsSlotCount = GetContainerNumSlots(bagNumber)
+		for slotNumber = 1, bagsSlotCount do
+			local itemButton = _G["BaudBagSubBag" .. bagNumber .. "Item" .. slotNumber]
+			checkItem(bagNumber, slotNumber, itemButton)
+		end
+	end
+end
+
 -- Also works for bBag.
 local function markNormalBags()
 	for bagNumber = 0, 4 do
@@ -178,6 +188,8 @@ local function markWares()
 		markCombuctorBags()
 	elseif IsAddOnLoaded("OneBag3") then
 		markOneBagBags()
+	elseif IsAddOnLoaded("BaudBag") then
+		markBaudBagBags()
 	else
 		markNormalBags()
 	end
@@ -271,6 +283,7 @@ SLASH_PEDDLER_COMMAND1 = '/peddler'
 SlashCmdList['PEDDLER_COMMAND'] = function(command)
 	if command == 'silent' then
 		Silent = not Silent
+		print('Peddler: Silent mode '.. (Silent and '|cFF00CC00enabled|r' or '|cFFCF0000disabled') .. '|r')
 	else
 		print('"/peddler silent" [' .. (Silent and '|cFF00CC00ON|r' or '|cFFCF0000OFF') .. '|r]  - Silence chat output about prices and sold item information.')
 	end
