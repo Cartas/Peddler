@@ -167,6 +167,27 @@ local function markBaudBagBags()
 	end
 end
 
+local function markAdiBagBags()
+	local totalSlotCount = 0
+	for bagNumber = 0, 4 do
+		totalSlotCount = totalSlotCount + GetContainerNumSlots(bagNumber)
+	end
+
+	for slotNumber = 1, totalSlotCount do
+		local itemButton = _G["AdiBagsItemButton" .. slotNumber]
+		if itemButton then
+			local _, bag, slot = strsplit('-', tostring(itemButton))
+
+			bag = tonumber(bag)
+			slot = tonumber(slot)
+
+			if bag and slot then
+				checkItem(bag, slot, itemButton)
+			end
+		end
+	end
+end
+
 -- Also works for bBag.
 local function markNormalBags()
 	for bagNumber = 0, 4 do
@@ -190,6 +211,8 @@ local function markWares()
 		markOneBagBags()
 	elseif IsAddOnLoaded("BaudBag") then
 		markBaudBagBags()
+	elseif IsAddOnLoaded("AdiBags") then
+		markAdiBagBags()
 	else
 		markNormalBags()
 	end
