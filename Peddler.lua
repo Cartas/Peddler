@@ -188,6 +188,16 @@ local function markAdiBagBags()
 	end
 end
 
+local function markArkInventoryBags()
+	for bagNumber = 0, 4 do
+		local bagsSlotCount = GetContainerNumSlots(bagNumber)
+		for slotNumber = 1, bagsSlotCount do
+			local itemButton = _G["ARKINV_Frame1ContainerBag" .. bagNumber + 1 .. "Item" .. slotNumber]
+			checkItem(bagNumber, slotNumber, itemButton)
+		end
+	end
+end
+
 -- Also works for bBag.
 local function markNormalBags()
 	for bagNumber = 0, 4 do
@@ -213,6 +223,8 @@ local function markWares()
 		markBaudBagBags()
 	elseif IsAddOnLoaded("AdiBags") then
 		markAdiBagBags()
+	elseif IsAddOnLoaded("ArkInventory") then
+		markArkInventoryBags()
 	else
 		markNormalBags()
 	end
