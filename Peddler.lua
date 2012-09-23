@@ -258,6 +258,10 @@ local function handleEvent(self, event, addonName)
 			UnmarkedGrayItems = {}
 		end
 
+		if not ModifierKey then
+			ModifierKey = "CTRL"
+		end
+
 		countLimit = 400
 		peddler:SetScript("OnUpdate", onUpdate)
 
@@ -278,7 +282,8 @@ end
 peddler:SetScript("OnEvent", handleEvent)
 
 local function handleItemClick(self, button)
-	local usingPeddler = IsControlKeyDown() and button == 'RightButton'
+	local modifierDown = (ModifierKey == 'CTRL' and IsControlKeyDown() or (ModifierKey == 'SHIFT' and IsShiftKeyDown() or (ModifierKey == 'ALT' and IsAltKeyDown())))
+	local usingPeddler = modifierDown and button == 'RightButton'
 	if not usingPeddler then
 		return
 	end
@@ -316,10 +321,17 @@ hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", handleItemClick)
 -- Handling Peddler's options.
 SLASH_PEDDLER_COMMAND1 = '/peddler'
 SlashCmdList['PEDDLER_COMMAND'] = function(command)
+	local key = ""
+	command, key = strsplit(' ', string.lower(command))
+
 	if command == 'silent' then
 		Silent = not Silent
 		print('Peddler: Silent mode '.. (Silent and '|cFF00CC00enabled|r' or '|cFFCF0000disabled') .. '|r')
+	elseif command == 'modifier' and (key == 'ctrl' or key == 'shift' or key == 'alt') then
+		ModifierKey = string.upper(key)
+		print('Peddler: Modifier key set to ' .. ModifierKey)
 	else
 		print('"/peddler silent" [' .. (Silent and '|cFF00CC00ON|r' or '|cFFCF0000OFF') .. '|r]  - Silence chat output about prices and sold item information.')
+		print('"/peddler modifier CTRL/SHIFT/ALT" [|cFF00CC00' .. ModifierKey .. '|r] - Set the modifier key you\'d like to flag items with.')
 	end
 end
