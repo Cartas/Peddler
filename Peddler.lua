@@ -9,6 +9,8 @@ local IsControlKeyDown = IsControlKeyDown
 local next = next
 local Baggins = Baggins
 
+local BUYBACK_COUNT = 12
+
 -- Turns an integer value into the format "Xg Ys Zc".
 local function priceToGold(price)
 	local gold = price / 10000
@@ -28,6 +30,7 @@ peddler:RegisterEvent("MERCHANT_SHOW")
 
 local function peddleGoods()
 	local total = 0
+	local sellCount = 0
 
 	for bagNumber = 0, 4 do
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
@@ -54,7 +57,7 @@ local function peddleGoods()
 						end
 
 						total = total + price
-						local output = "    " .. link
+						local output = "    " .. sellCount + 1 .. '. ' .. link
 
 						if amount > 1 then
 							output = output .. "x" .. amount
@@ -66,7 +69,15 @@ local function peddleGoods()
 
 					-- Actually sell the item!
 					UseContainerItem(bagNumber, slotNumber)
+					sellCount = sellCount + 1
+					if (SellLimit and sellCount >= BUYBACK_COUNT) then
+						break
+					end
 				end
+			end
+
+			if (SellLimit and sellCount >= BUYBACK_COUNT) then
+				break
 			end
 		end
 	end
@@ -172,6 +183,9 @@ local function markAdiBagBags()
 	for bagNumber = 0, 4 do
 		totalSlotCount = totalSlotCount + GetContainerNumSlots(bagNumber)
 	end
+
+	-- For some reason, AdiBags can have way more buttons than the actual amount of bag slots... not sure how or why.
+	totalSlotCount = totalSlotCount + 30
 
 	for slotNumber = 1, totalSlotCount do
 		local itemButton = _G["AdiBagsItemButton" .. slotNumber]
@@ -324,14 +338,19 @@ SlashCmdList['PEDDLER_COMMAND'] = function(command)
 	local key = ""
 	command, key = strsplit(' ', string.lower(command))
 
-	if command == 'silent' then
-		Silent = not Silent
-		print('Peddler: Silent mode '.. (Silent and '|cFF00CC00enabled|r' or '|cFFCF0000disabled') .. '|r')
-	elseif command == 'modifier' and (key == 'ctrl' or key == 'shift' or key == 'alt') then
+	if command == 'modifier' and (key == 'ctrl' or key == 'shift' or key == 'alt') then
 		ModifierKey = string.upper(key)
 		print('Peddler: Modifier key set to ' .. ModifierKey)
+	elseif command == 'selllimit' then
+		print(SellLimit)
+		SellLimit = not SellLimit
+		print ('Peddler: Sell limit ' .. (SellLimit and '|cFF00CC00enabled|r' or '|cFFCF0000disabled') .. '|r')
+	elseif command == 'silent' then
+		Silent = not Silent
+		print('Peddler: Silent mode '.. (Silent and '|cFF00CC00enabled|r' or '|cFFCF0000disabled') .. '|r')
 	else
-		print('"/peddler silent" [' .. (Silent and '|cFF00CC00ON|r' or '|cFFCF0000OFF') .. '|r]  - Silence chat output about prices and sold item information.')
 		print('"/peddler modifier CTRL/SHIFT/ALT" [|cFF00CC00' .. ModifierKey .. '|r] - Set the modifier key you\'d like to flag items with.')
+		print('"/peddler sellLimit" [' .. (SellLimit and '|cFF00CC00ON|r' or '|cFFCF0000OFF') .. '|r]  - Limits the amount of items sold in one go to ' .. BUYBACK_COUNT .. ', to safely allow buy-back.')
+		print('"/peddler silent" [' .. (Silent and '|cFF00CC00ON|r' or '|cFFCF0000OFF') .. '|r]  - Silence chat output about prices and sold item information.')
 	end
 end
