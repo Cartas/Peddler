@@ -283,11 +283,10 @@ local function handleEvent(self, event, addonName)
 			Baggins:RegisterSignal("Baggins_BagOpened", handleBagginsOpened, Baggins)
 		end
 	elseif event == "PLAYER_ENTERING_WORLD" then
+		peddler:RegisterEvent("ITEM_UNLOCKED")
 		peddler:RegisterEvent("BAG_UPDATE")
-	elseif event == "BAG_UPDATE" then
-		if markCounter == 0 then
-			peddler:SetScript("OnUpdate", onUpdate)
-		end
+	elseif event == "ITEM_UNLOCKED" or "BAG_UPDATE" then
+		markWares()
 	elseif event == "MERCHANT_SHOW" then
 		peddleGoods()
 	end
