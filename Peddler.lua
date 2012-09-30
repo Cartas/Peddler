@@ -331,26 +331,3 @@ local function handleItemClick(self, button)
 end
 
 hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", handleItemClick)
-
--- Handling Peddler's options.
-SLASH_PEDDLER_COMMAND1 = '/peddler'
-SlashCmdList['PEDDLER_COMMAND'] = function(command)
-	local key = ""
-	command, key = strsplit(' ', string.lower(command))
-
-	if command == 'modifier' and (key == 'ctrl' or key == 'shift' or key == 'alt') then
-		ModifierKey = string.upper(key)
-		print('Peddler: Modifier key set to ' .. ModifierKey)
-	elseif command == 'selllimit' then
-		print(SellLimit)
-		SellLimit = not SellLimit
-		print ('Peddler: Sell limit ' .. (SellLimit and '|cFF00CC00enabled|r' or '|cFFCF0000disabled') .. '|r')
-	elseif command == 'silent' then
-		Silent = not Silent
-		print('Peddler: Silent mode '.. (Silent and '|cFF00CC00enabled|r' or '|cFFCF0000disabled') .. '|r')
-	else
-		print('"/peddler modifier CTRL/SHIFT/ALT" [|cFF00CC00' .. ModifierKey .. '|r] - Set the modifier key you\'d like to flag items with.')
-		print('"/peddler sellLimit" [' .. (SellLimit and '|cFF00CC00ON|r' or '|cFFCF0000OFF') .. '|r]  - Limits the amount of items sold in one go to ' .. BUYBACK_COUNT .. ', to safely allow buy-back.')
-		print('"/peddler silent" [' .. (Silent and '|cFF00CC00ON|r' or '|cFFCF0000OFF') .. '|r]  - Silence chat output about prices and sold item information.')
-	end
-end

@@ -5,3 +5,4 @@
 ## SavedVariablesPerCharacter: ItemsToSell, UnmarkedGrayItems, ModifierKey, Silent, SellLimit
 
 Peddler.lua
+Options.lua
