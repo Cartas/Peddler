@@ -11,6 +11,16 @@ local Baggins = Baggins
 
 local BUYBACK_COUNT = 12
 
+-- The typical life-cycle of the addon goes as follows:
+--   1. Initially delays for 400ms before attempting to mark wares for the first time.
+--   2. We look for and get the item buttons for every item (differs per bag addon).
+--   3. Check if this item's ItemID is in our ItemsToSell.
+--   4. If 'tis, draw some lovely coins on the itemButton!
+--   5. a. Remove the OnUpdate (prev. used for 400ms delay).
+--      b. If using the default WoW bags, keep a 30ms timer for re-marking.
+--   6. Listen for BagUpdates to refresh the markings (moving an item, etc.).
+--        PS: Baggins needs to also listen to the bags being opened!
+
 -- Turns an integer value into the format "Xg Ys Zc".
 local function priceToGold(price)
 	local gold = price / 10000
@@ -21,6 +31,7 @@ local function priceToGold(price)
 end
 
 local peddler = CreateFrame("Frame", nil, UIParent)
+local usingDefaultBags = false
 local markCounter = 1
 local countLimit = 1
 
@@ -98,14 +109,17 @@ local function showCoinTexture(itemButton)
 
 	itemButton.coins:Show()
 
-	peddler:SetScript("OnUpdate", nil)
+	if not usingDefaultBags then
+		peddler:SetScript("OnUpdate", nil)
+	end
 	markCounter = 0
 
-	if IsAddOnLoaded("Baggins") then
-		-- Baggins updates slower than the others, so we have to account for that.
+	if usingDefaultBags or IsAddOnLoaded("Baggins") or IsAddOnLoaded("AdiBags") then
+		-- Baggins/AdiBag update slower than the others, so we have to account for that.
+		-- Default WoW bags need to constantly be updating, due to opening of individual bags.
 		countLimit = 30
 	else
-		countLimit = 1
+		countLimit = 5
 	end
 end
 
@@ -214,14 +228,25 @@ end
 
 -- Also works for bBag.
 local function markNormalBags()
-	for bagNumber = 0, 4 do
-		local bagsSlotCount = GetContainerNumSlots(bagNumber)
-		for slotNumber = 1, bagsSlotCount do
-			-- It appears there are two ways of finding items!
-			--   Accessing via _G means that bagNumbers are 1-based indices and
-			--   slot numbers start from the bottom-right rather than top-left!
-			local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
-			checkItem(bagNumber, slotNumber, itemButton)
+	for containerNumber = 0, 4 do
+		local container = _G["ContainerFrame" .. containerNumber + 1]
+		if (container:IsShown()) then
+			local bagsSlotCount = GetContainerNumSlots(containerNumber)
+			for slotNumber = 1, bagsSlotCount do
+				-- It appears there are two ways of finding items!
+				--   Accessing via _G means that bagNumbers are 1-based indices and
+				--   slot numbers start from the bottom-right rather than top-left!
+				-- Additionally, as only a couple of the bags may be visible at any
+				--   given time, we may be looking at items whose buttons don't
+				--   currently exist, and mark the wrong ones, so get the actual
+				--   bag & slot number from the itemButton.
+
+				local itemButton = _G["ContainerFrame" .. containerNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
+
+				local bagNumber = itemButton:GetParent():GetID()
+				local actualSlotNumber = itemButton:GetID()
+				checkItem(bagNumber, actualSlotNumber, itemButton)
+			end
 		end
 	end
 end
@@ -240,6 +265,7 @@ local function markWares()
 	elseif IsAddOnLoaded("ArkInventory") then
 		markArkInventoryBags()
 	else
+		usingDefaultBags = true
 		markNormalBags()
 	end
 end
