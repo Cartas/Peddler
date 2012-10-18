@@ -226,6 +226,23 @@ local function markArkInventoryBags()
 	end
 end
 
+local function markCargBagsNivayaBags()
+	local totalSlotCount = 0
+	for bagNumber = 0, 4 do
+		totalSlotCount = totalSlotCount + GetContainerNumSlots(bagNumber)
+	end
+
+	for slotNumber = 1, totalSlotCount do
+		local itemButton = _G["NivayaSlot" .. slotNumber]
+		if itemButton then
+			local itemsBagNumber = itemButton:GetParent():GetID()
+			local itemsSlotNumber = itemButton:GetID()
+			checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+		end
+		slotNumber = slotNumber + 1
+	end
+end
+
 -- Also works for bBag.
 local function markNormalBags()
 	for containerNumber = 0, 4 do
@@ -264,6 +281,8 @@ local function markWares()
 		markAdiBagBags()
 	elseif IsAddOnLoaded("ArkInventory") then
 		markArkInventoryBags()
+	elseif IsAddOnLoaded("cargBags_Nivaya") then
+		markCargBagsNivayaBags()
 	else
 		usingDefaultBags = true
 		markNormalBags()
