@@ -39,6 +39,22 @@ peddler:RegisterEvent("PLAYER_ENTERING_WORLD")
 peddler:RegisterEvent("ADDON_LOADED")
 peddler:RegisterEvent("MERCHANT_SHOW")
 
+local function itemIsToBeSold(itemID)
+	local _, _, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
+
+	if price <= 0 then
+		return
+	end
+
+	local unmarkedItem = UnmarkedItems[itemID]
+
+	local unwantedGray = quality == 0 and AutoSellGreyItems and not unmarkedItem
+	local unwantedWhite = quality == 1 and AutoSellWhiteItems and not unmarkedItem
+	local unwantedGreen = quality == 2 and AutoSellGreenItems and not unmarkedItem
+
+	return (ItemsToSell[itemID] or unwantedGray or unwantedWhite or unwantedGreen)
+end
+
 local function peddleGoods()
 	local total = 0
 	local sellCount = 0
@@ -48,42 +64,39 @@ local function peddleGoods()
 		for slotNumber = 1, bagsSlotCount do
 			local itemID = GetContainerItemID(bagNumber, slotNumber)
 
-			if itemID then
-				local _, link, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
+			if itemID and itemIsToBeSold(itemID) then
+				local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
 
-				if ItemsToSell[itemID] or (quality == 0 and not UnmarkedGrayItems[itemID]) then
-					local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
+				if itemButton.coins then
+					itemButton.coins:Hide()
+				end
 
-					if itemButton.coins then
-						itemButton.coins:Hide()
+				local _, amount = GetContainerItemInfo(bagNumber, slotNumber)
+
+				if price > 0 and not Silent then
+					price = price * amount
+
+					if total == 0 then
+						print("Peddler sold:")
 					end
 
-					local _, amount = GetContainerItemInfo(bagNumber, slotNumber)
+					total = total + price
+					local _, link = GetItemInfo(itemID)
+					local output = "    " .. sellCount + 1 .. '. ' .. link
 
-					if price > 0 and not Silent then
-						price = price * amount
-
-						if total == 0 then
-							print("Peddler sold:")
-						end
-
-						total = total + price
-						local output = "    " .. sellCount + 1 .. '. ' .. link
-
-						if amount > 1 then
-							output = output .. "x" .. amount
-						end
-
-						output = output .. " for " .. priceToGold(price)
-						print(output)
+					if amount > 1 then
+						output = output .. "x" .. amount
 					end
 
-					-- Actually sell the item!
-					UseContainerItem(bagNumber, slotNumber)
-					sellCount = sellCount + 1
-					if (SellLimit and sellCount >= BUYBACK_COUNT) then
-						break
-					end
+					output = output .. " for " .. priceToGold(price)
+					print(output)
+				end
+
+				-- Actually sell the item!
+				UseContainerItem(bagNumber, slotNumber)
+				sellCount = sellCount + 1
+				if (SellLimit and sellCount >= BUYBACK_COUNT) then
+					break
 				end
 			end
 
@@ -127,8 +140,7 @@ local function checkItem(bagNumber, slotNumber, itemButton)
 	local itemID = GetContainerItemID(bagNumber, slotNumber)
 
 	if itemID then
-		local _, _, quality = GetItemInfo(itemID)
-		if ItemsToSell[itemID] or (quality == 0 and not UnmarkedGrayItems[itemID]) then
+		if itemIsToBeSold(itemID) then
 			showCoinTexture(itemButton)
 		elseif itemButton.coins then
 			itemButton.coins:Hide()
@@ -313,8 +325,8 @@ local function handleEvent(self, event, addonName)
 			ItemsToSell = {}
 		end
 
-		if not UnmarkedGrayItems then
-			UnmarkedGrayItems = {}
+		if not UnmarkedItems then
+			UnmarkedItems = {}
 		end
 
 		if not ModifierKey then
@@ -360,11 +372,13 @@ local function handleItemClick(self, button)
 		return
 	end
 
-	if quality == 0 then
-		if UnmarkedGrayItems[itemID] then
-			UnmarkedGrayItems[itemID] = nil
+	if (quality == 0 and AutoSellGreyItems) or
+		(quality == 1 and AutoSellWhiteItems) or
+		(quality == 2 and AutoSellGreenItems) then
+		if UnmarkedItems[itemID] then
+			UnmarkedItems[itemID] = nil
 		else
-			UnmarkedGrayItems[itemID] = 1
+			UnmarkedItems[itemID] = 1
 		end
 	elseif ItemsToSell[itemID] then
 		ItemsToSell[itemID] = nil

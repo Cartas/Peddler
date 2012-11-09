@@ -66,6 +66,25 @@ function frame:CreateOptions()
 	UIDropDownMenu_SetWidth(ModifierKeyDropDown, 90);
 	UIDropDownMenu_SetButtonWidth(ModifierKeyDropDown, 90)
 
+	local autoSellLabel = self:CreateFontString(nil, nil, "GameFontNormal")
+	autoSellLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 16, -140)
+	autoSellLabel:SetText("Automatically sell...")
+
+	local autoSellGreyItems = createCheckBox(self, title, 6, AutoSellGreyItems, "Grey Items", "Automatically sells all grey/junk items.")
+	autoSellGreyItems:SetScript("PostClick", function(self, button, down)
+		AutoSellGreyItems = self:GetChecked();
+	end)
+
+	local autoSellWhiteItems = createCheckBox(self, title, 7, AutoSellWhiteItems, "White Items", "Automatically sells all white/common items.")
+	autoSellWhiteItems:SetScript("PostClick", function(self, button, down)
+		AutoSellWhiteItems = self:GetChecked();
+	end)
+
+	local autoSellGreenItems = createCheckBox(self, title, 8, AutoSellGreenItems, "Green Items", "Automatically sells all green/uncommon items.")
+	autoSellGreenItems:SetScript("PostClick", function(self, button, down)
+		AutoSellGreenItems = self:GetChecked();
+	end)
+
 	self:refresh()
 end
 

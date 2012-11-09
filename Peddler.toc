@@ -3,7 +3,7 @@
 ## Notes: Automatically sells previously designated items!
 ## Author: Cartas @ GrimBatol
 ## SavedVariables: ModifierKey, SellLimit, Silent
-## SavedVariablesPerCharacter: ItemsToSell, UnmarkedGrayItems
+## SavedVariablesPerCharacter: ItemsToSell, UnmarkedItems, AutoSellGreyItems, AutoSellWhiteItems, AutoSellGreenItems
 
 Peddler.lua
 Options.lua
