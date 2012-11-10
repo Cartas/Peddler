@@ -42,7 +42,7 @@ peddler:RegisterEvent("MERCHANT_SHOW")
 local function itemIsToBeSold(itemID)
 	local _, _, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
 
-	if price <= 0 then
+	if not price or price <= 0 then
 		return
 	end
 
@@ -73,7 +73,8 @@ local function peddleGoods()
 
 				local _, amount = GetContainerItemInfo(bagNumber, slotNumber)
 
-				if price > 0 and not Silent then
+				local _, _, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
+				if price and price > 0 and not Silent then
 					price = price * amount
 
 					if total == 0 then
