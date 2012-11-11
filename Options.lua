@@ -1,3 +1,5 @@
+local _, ns = ...
+
 local frame = CreateFrame("Frame", nil, InterfaceOptionsFramePanelContainer)
 frame.name = "Peddler"
 frame:Hide()
@@ -56,9 +58,9 @@ function frame:CreateOptions()
 		Silent = self:GetChecked()
 	end)
 
-	local modifierKeyLabel = self:CreateFontString(nil, nil, "GameFontHighlight")
+	local modifierKeyLabel = self:CreateFontString(nil, nil, "GameFontNormal")
 	modifierKeyLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 16, -90)
-	modifierKeyLabel:SetText("Modifier Key:")
+	modifierKeyLabel:SetText("Modifier Key (used with right-click to mark/unmark items):")
 
 	local modifierKey = CreateFrame("Button", "ModifierKeyDropDown", self, "UIDropDownMenuTemplate")
 	modifierKey:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 16, -110)
@@ -67,22 +69,31 @@ function frame:CreateOptions()
 	UIDropDownMenu_SetButtonWidth(ModifierKeyDropDown, 90)
 
 	local autoSellLabel = self:CreateFontString(nil, nil, "GameFontNormal")
-	autoSellLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 16, -140)
+	autoSellLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 16, -160)
 	autoSellLabel:SetText("Automatically sell...")
 
-	local autoSellGreyItems = createCheckBox(self, title, 6, AutoSellGreyItems, "Grey Items", "Automatically sells all grey/junk items.")
+	local autoSellGreyItems = createCheckBox(self, title, 7, AutoSellGreyItems, "Grey Items", "Automatically sells all grey/junk items.")
 	autoSellGreyItems:SetScript("PostClick", function(self, button, down)
-		AutoSellGreyItems = self:GetChecked();
+		AutoSellGreyItems = self:GetChecked()
+		ns.markWares()
 	end)
 
-	local autoSellWhiteItems = createCheckBox(self, title, 7, AutoSellWhiteItems, "White Items", "Automatically sells all white/common items.")
+	local autoSellWhiteItems = createCheckBox(self, title, 8, AutoSellWhiteItems, "White Items", "Automatically sells all white/common items.")
 	autoSellWhiteItems:SetScript("PostClick", function(self, button, down)
-		AutoSellWhiteItems = self:GetChecked();
+		AutoSellWhiteItems = self:GetChecked()
+		ns.markWares()
 	end)
 
-	local autoSellGreenItems = createCheckBox(self, title, 8, AutoSellGreenItems, "Green Items", "Automatically sells all green/uncommon items.")
+	local autoSellGreenItems = createCheckBox(self, title, 9, AutoSellGreenItems, "Green Items", "Automatically sells all green/uncommon items.")
 	autoSellGreenItems:SetScript("PostClick", function(self, button, down)
-		AutoSellGreenItems = self:GetChecked();
+		AutoSellGreenItems = self:GetChecked()
+		ns.markWares()
+	end)
+
+	local autoSellUnwantedItems = createCheckBox(self, title, 10, AutoSellUnwantedItems, "Unwanted Items", "Automatically sell all items which are unwanted for your current class (e.g. Priests don't want plate gear, so all plate gear will be marked).")
+	autoSellUnwantedItems:SetScript("PostClick", function(self, button, down)
+		AutoSellUnwantedItems = self:GetChecked()
+		ns.markWares()
 	end)
 
 	self:refresh()

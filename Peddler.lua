@@ -1,3 +1,5 @@
+local _, ns = ...
+
 -- Assign global functions to locals for optimisation.
 local GetContainerNumSlots = GetContainerNumSlots
 local GetContainerItemID = GetContainerItemID
@@ -6,10 +8,16 @@ local GetItemCount = GetItemCount
 local GetContainerItemInfo = GetContainerItemInfo
 local UseContainerItem = UseContainerItem
 local IsControlKeyDown = IsControlKeyDown
+local UnitClass = UnitClass
 local next = next
 local Baggins = Baggins
 
+local ARMOUR = ns.ARMOUR
+local WEAPON = ns.WEAPON
+local WANTED_ITEMS = ns.WANTED_ITEMS
+
 local BUYBACK_COUNT = 12
+	local _, PLAYERS_CLASS = UnitClass('player')
 
 -- The typical life-cycle of the addon goes as follows:
 --   1. Initially delays for 400ms before attempting to mark wares for the first time.
@@ -39,20 +47,43 @@ peddler:RegisterEvent("PLAYER_ENTERING_WORLD")
 peddler:RegisterEvent("ADDON_LOADED")
 peddler:RegisterEvent("MERCHANT_SHOW")
 
-local function itemIsToBeSold(itemID)
-	local _, _, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
+local function isUnwantedItem(itemID, itemType, subType)
+	local unwantedItem = false
 
+	if AutoSellUnwantedItems and (itemType == WEAPON or itemType == ARMOUR) then
+		unwantedItem = true
+		for key, value in pairs(WANTED_ITEMS[PLAYERS_CLASS][itemType]) do
+			if subType == value then
+				unwantedItem = false
+				break
+			end
+		end
+	end
+
+	return unwantedItem
+end
+
+local function itemIsToBeSold(itemID)
+	local _, _, quality, itemLevel, _, itemType, subType, _, _, _, price = GetItemInfo(itemID)
+
+	-- No price?  No sale!
 	if not price or price <= 0 then
 		return
 	end
 
 	local unmarkedItem = UnmarkedItems[itemID]
+	-- The user has specifically unmarked this item, so we never sell it!
+	if unmarkedItem then
+		return false
+	end
 
-	local unwantedGray = quality == 0 and AutoSellGreyItems and not unmarkedItem
-	local unwantedWhite = quality == 1 and AutoSellWhiteItems and not unmarkedItem
-	local unwantedGreen = quality == 2 and AutoSellGreenItems and not unmarkedItem
+	local unwantedGray = quality == 0 and AutoSellGreyItems
+	local unwantedWhite = quality == 1 and AutoSellWhiteItems
+	local unwantedGreen = quality == 2 and AutoSellGreenItems
 
-	return (ItemsToSell[itemID] or unwantedGray or unwantedWhite or unwantedGreen)
+	local unwantedItem = isUnwantedItem(itemID, itemType, subType)
+
+	return (ItemsToSell[itemID] or unwantedGray or unwantedWhite or unwantedGreen or unwantedItem)
 end
 
 local function peddleGoods()
@@ -256,6 +287,17 @@ local function markCargBagsNivayaBags()
 	end
 end
 
+-- Special thanks to Tymesink from WowInterface for this one.
+local function markfamBagsBags()
+	for bagNumber = 0, 4 do
+		local bagsSlotCount = GetContainerNumSlots(bagNumber)
+		for slotNumber = 1, bagsSlotCount do
+			local itemButton = _G["famBagsButton_" .. bagNumber .. "_" .. slotNumber]
+			checkItem(bagNumber, slotNumber, itemButton)
+		end
+	end
+end
+
 -- Also works for bBag.
 local function markNormalBags()
 	for containerNumber = 0, 4 do
@@ -296,11 +338,15 @@ local function markWares()
 		markArkInventoryBags()
 	elseif IsAddOnLoaded("cargBags_Nivaya") then
 		markCargBagsNivayaBags()
+	elseif IsAddOnLoaded("famBags") then
+		markfamBagsBags()
 	else
 		usingDefaultBags = true
 		markNormalBags()
 	end
 end
+
+ns.markWares = markWares
 
 local function onUpdate()
 	markCounter = markCounter + 1
@@ -368,14 +414,17 @@ local function handleItemClick(self, button)
 		return
 	end
 
-	local _, link, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
+	local _, link, quality, _, _, itemType, subType, _, _, _, price = GetItemInfo(itemID)
 	if price == 0 then
 		return
 	end
 
+	local unwantedItem = isUnwantedItem(itemID, itemType, subType)
+
 	if (quality == 0 and AutoSellGreyItems) or
 		(quality == 1 and AutoSellWhiteItems) or
-		(quality == 2 and AutoSellGreenItems) then
+		(quality == 2 and AutoSellGreenItems) or
+		(unwantedItem) then
 		if UnmarkedItems[itemID] then
 			UnmarkedItems[itemID] = nil
 		else
