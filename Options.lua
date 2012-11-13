@@ -72,6 +72,13 @@ function frame:CreateOptions()
 	autoSellLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 16, -160)
 	autoSellLabel:SetText("Automatically sell...")
 
+	local autoSellSoulboundOnly = createCheckBox(self, title, 6, SoulboundOnly, "Restrict to Soulbound Items", "Only allow Peddler to automatically mark soulbound items for sale (does not restrict grey items, naturally).")
+	autoSellSoulboundOnly:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 120, -155)
+	autoSellSoulboundOnly:SetScript("PostClick", function(self, button, down)
+		SoulboundOnly = self:GetChecked()
+		ns.markWares()
+	end)
+
 	local autoSellGreyItems = createCheckBox(self, title, 7, AutoSellGreyItems, "Grey Items", "Automatically sells all grey/junk items.")
 	autoSellGreyItems:SetScript("PostClick", function(self, button, down)
 		AutoSellGreyItems = self:GetChecked()

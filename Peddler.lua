@@ -47,6 +47,31 @@ peddler:RegisterEvent("PLAYER_ENTERING_WORLD")
 peddler:RegisterEvent("ADDON_LOADED")
 peddler:RegisterEvent("MERCHANT_SHOW")
 
+-- Is there really no better way to check soulbound-ness...?
+local souldboundToolip
+local function isSoulbound(itemLink)
+	if not souldboundToolip then
+		local tip, leftside = CreateFrame("GameTooltip"), {}
+		for i = 1, 3 do
+			local left, right = tip:CreateFontString(), tip:CreateFontString()
+			left:SetFontObject(GameFontNormal)
+			right:SetFontObject(GameFontNormal)
+			tip:AddFontStrings(left, right)
+			leftside[i] = left
+		end
+		tip.leftside = leftside
+		souldboundToolip = tip
+	end
+
+	souldboundToolip:SetOwner(UIParent, "ANCHOR_NONE")
+	souldboundToolip:ClearLines()
+	souldboundToolip:SetHyperlink(itemLink)
+	local secondLine = souldboundToolip.leftside[2]:GetText()
+	local thirdLine = souldboundToolip.leftside[3]:GetText()
+	souldboundToolip:Hide()
+	return ((secondLine == ITEM_SOULBOUND or secondLine == ITEM_BIND_ON_PICKUP) or (thirdLine == ITEM_SOULBOUND or thirdLine == ITEM_BIND_ON_PICKUP))
+end
+
 local function isUnwantedItem(itemID, itemType, subType)
 	local unwantedItem = false
 
@@ -64,7 +89,7 @@ local function isUnwantedItem(itemID, itemType, subType)
 end
 
 local function itemIsToBeSold(itemID)
-	local _, _, quality, itemLevel, _, itemType, subType, _, _, _, price = GetItemInfo(itemID)
+	local _, link, quality, itemLevel, _, itemType, subType, _, _, _, price = GetItemInfo(itemID)
 
 	-- No price?  No sale!
 	if not price or price <= 0 then
@@ -72,18 +97,23 @@ local function itemIsToBeSold(itemID)
 	end
 
 	local unmarkedItem = UnmarkedItems[itemID]
-	-- The user has specifically unmarked this item, so we never sell it!
-	if unmarkedItem then
-		return false
+
+	local unwantedGrey = quality == 0 and AutoSellGreyItems and not unmarkedItem
+	local unwantedWhite = quality == 1 and AutoSellWhiteItems and not unmarkedItem
+	local unwantedGreen = quality == 2 and AutoSellGreenItems and not unmarkedItem
+
+	local unwantedItem = isUnwantedItem(itemID, itemType, subType) and not unmarkedItem
+
+	local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedItem)
+
+	if autoSellable then
+		if SoulboundOnly and not unwantedGrey then
+			local isSoulbound = isSoulbound(link)
+			autoSellable = isSoulbound
+		end
 	end
 
-	local unwantedGray = quality == 0 and AutoSellGreyItems
-	local unwantedWhite = quality == 1 and AutoSellWhiteItems
-	local unwantedGreen = quality == 2 and AutoSellGreenItems
-
-	local unwantedItem = isUnwantedItem(itemID, itemType, subType)
-
-	return (ItemsToSell[itemID] or unwantedGray or unwantedWhite or unwantedGreen or unwantedItem)
+	return ItemsToSell[itemID] or autoSellable
 end
 
 local function peddleGoods()
@@ -419,16 +449,27 @@ local function handleItemClick(self, button)
 		return
 	end
 
+	local unwantedGrey = quality == 0 and AutoSellGreyItems
+	local unwantedWhite = quality == 1 and AutoSellWhiteItems
+	local unwantedGreen = quality == 2 and AutoSellGreenItems
+
 	local unwantedItem = isUnwantedItem(itemID, itemType, subType)
 
-	if (quality == 0 and AutoSellGreyItems) or
-		(quality == 1 and AutoSellWhiteItems) or
-		(quality == 2 and AutoSellGreenItems) or
-		(unwantedItem) then
+	local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedItem)
+
+	if autoSellable then
+		if SoulboundOnly and not unwantedGrey then
+			local isSoulbound = isSoulbound(link)
+			autoSellable = isSoulbound
+		end
+	end
+
+	if autoSellable then
 		if UnmarkedItems[itemID] then
 			UnmarkedItems[itemID] = nil
 		else
 			UnmarkedItems[itemID] = 1
+			ItemsToSell[itemID] = nil
 		end
 	elseif ItemsToSell[itemID] then
 		ItemsToSell[itemID] = nil
