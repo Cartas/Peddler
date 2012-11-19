@@ -72,10 +72,12 @@ local function isSoulbound(itemLink)
 	return ((secondLine == ITEM_SOULBOUND or secondLine == ITEM_BIND_ON_PICKUP) or (thirdLine == ITEM_SOULBOUND or thirdLine == ITEM_BIND_ON_PICKUP))
 end
 
-local function isUnwantedItem(itemID, itemType, subType)
+local function isUnwantedItem(itemID, itemType, subType, equipSlot)
 	local unwantedItem = false
 
-	if AutoSellUnwantedItems and (itemType == WEAPON or itemType == ARMOUR) then
+	-- Of course we never want to sell cloaks!
+	local isCloak = equipSlot == 'INVTYPE_CLOAK'
+	if AutoSellUnwantedItems and (itemType == WEAPON or itemType == ARMOUR) and not isCloak then
 		unwantedItem = true
 		for key, value in pairs(WANTED_ITEMS[PLAYERS_CLASS][itemType]) do
 			if subType == value then
@@ -89,7 +91,7 @@ local function isUnwantedItem(itemID, itemType, subType)
 end
 
 local function itemIsToBeSold(itemID)
-	local _, link, quality, itemLevel, _, itemType, subType, _, _, _, price = GetItemInfo(itemID)
+	local _, link, quality, itemLevel, _, itemType, subType, _, equipSlot, _, price = GetItemInfo(itemID)
 
 	-- No price?  No sale!
 	if not price or price <= 0 then
@@ -102,7 +104,7 @@ local function itemIsToBeSold(itemID)
 	local unwantedWhite = quality == 1 and AutoSellWhiteItems and not unmarkedItem
 	local unwantedGreen = quality == 2 and AutoSellGreenItems and not unmarkedItem
 
-	local unwantedItem = isUnwantedItem(itemID, itemType, subType) and not unmarkedItem
+	local unwantedItem = isUnwantedItem(itemID, itemType, subType, equipSlot) and not unmarkedItem
 
 	local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedItem)
 
@@ -275,6 +277,10 @@ local function markAdiBagBags()
 	-- For some reason, AdiBags can have way more buttons than the actual amount of bag slots... not sure how or why.
 	totalSlotCount = totalSlotCount + 30
 
+	if totalSlotCount < 100 then
+		totalSlotCount = 100
+	end
+
 	for slotNumber = 1, totalSlotCount do
 		local itemButton = _G["AdiBagsItemButton" .. slotNumber]
 		if itemButton then
@@ -444,7 +450,7 @@ local function handleItemClick(self, button)
 		return
 	end
 
-	local _, link, quality, _, _, itemType, subType, _, _, _, price = GetItemInfo(itemID)
+	local _, link, quality, _, _, itemType, subType, _, equipSlot, _, price = GetItemInfo(itemID)
 	if price == 0 then
 		return
 	end
@@ -453,7 +459,7 @@ local function handleItemClick(self, button)
 	local unwantedWhite = quality == 1 and AutoSellWhiteItems
 	local unwantedGreen = quality == 2 and AutoSellGreenItems
 
-	local unwantedItem = isUnwantedItem(itemID, itemType, subType)
+	local unwantedItem = isUnwantedItem(itemID, itemType, subType, equipSlot)
 
 	local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedItem)
 
