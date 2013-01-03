@@ -3,7 +3,7 @@
 ## Notes: Automatically sells previously designated items!
 ## Author: Cartas @ GrimBatol
 ## SavedVariables: ModifierKey, SellLimit, Silent
-## SavedVariablesPerCharacter: ItemsToSell, UnmarkedItems, AutoSellGreyItems, AutoSellWhiteItems, AutoSellGreenItems, AutoSellUnwantedItems, SoulboundOnly
+## SavedVariablesPerCharacter: ItemsToSell, UnmarkedItems, AutoSellGreyItems, AutoSellWhiteItems, AutoSellGreenItems, AutoSellBlueItems, AutoSellPurpleItems, AutoSellUnwantedItems, SoulboundOnly
 
 vo\WantedItems.lua
 Peddler.lua

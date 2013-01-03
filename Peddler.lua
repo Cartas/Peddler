@@ -48,11 +48,12 @@ peddler:RegisterEvent("ADDON_LOADED")
 peddler:RegisterEvent("MERCHANT_SHOW")
 
 -- Is there really no better way to check soulbound-ness...?
-local souldboundToolip
+local soulboundToolip
 local function isSoulbound(itemLink)
-	if not souldboundToolip then
-		local tip, leftside = CreateFrame("GameTooltip"), {}
-		for i = 1, 3 do
+	if not soulboundToolip then
+		local tip = CreateFrame("GameTooltip")
+		local leftside = {}
+		for i = 1, 4 do
 			local left, right = tip:CreateFontString(), tip:CreateFontString()
 			left:SetFontObject(GameFontNormal)
 			right:SetFontObject(GameFontNormal)
@@ -60,16 +61,19 @@ local function isSoulbound(itemLink)
 			leftside[i] = left
 		end
 		tip.leftside = leftside
-		souldboundToolip = tip
+		soulboundToolip = tip
 	end
 
-	souldboundToolip:SetOwner(UIParent, "ANCHOR_NONE")
-	souldboundToolip:ClearLines()
-	souldboundToolip:SetHyperlink(itemLink)
-	local secondLine = souldboundToolip.leftside[2]:GetText()
-	local thirdLine = souldboundToolip.leftside[3]:GetText()
-	souldboundToolip:Hide()
-	return ((secondLine == ITEM_SOULBOUND or secondLine == ITEM_BIND_ON_PICKUP) or (thirdLine == ITEM_SOULBOUND or thirdLine == ITEM_BIND_ON_PICKUP))
+	soulboundToolip:SetOwner(UIParent, "ANCHOR_NONE")
+	soulboundToolip:ClearLines()
+	soulboundToolip:SetHyperlink(itemLink)
+	local secondLine = soulboundToolip.leftside[2]:GetText()
+	local thirdLine = soulboundToolip.leftside[3]:GetText()
+	-- 4th line is now needed if the item shows an Upgrade Level.
+	local fourthLine = soulboundToolip.leftside[4]:GetText()
+	soulboundToolip:Hide()
+
+	return ((secondLine == ITEM_SOULBOUND or secondLine == ITEM_BIND_ON_PICKUP) or (thirdLine == ITEM_SOULBOUND or thirdLine == ITEM_BIND_ON_PICKUP) or (fourthLine == ITEM_SOULBOUND or fourthLine == ITEM_BIND_ON_PICKUP))
 end
 
 local function isUnwantedItem(itemID, itemType, subType, equipSlot)
@@ -103,10 +107,12 @@ local function itemIsToBeSold(itemID)
 	local unwantedGrey = quality == 0 and AutoSellGreyItems and not unmarkedItem
 	local unwantedWhite = quality == 1 and AutoSellWhiteItems and not unmarkedItem
 	local unwantedGreen = quality == 2 and AutoSellGreenItems and not unmarkedItem
+	local unwantedBlue = quality == 3 and AutoSellBlueItems and not unmarkedItem
+	local unwantedPurple = quality == 4 and AutoSellPurpleItems and not unmarkedItem
 
 	local unwantedItem = isUnwantedItem(itemID, itemType, subType, equipSlot) and not unmarkedItem
 
-	local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedItem)
+	local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedBlue or unwantedPurple or unwantedItem)
 
 	if autoSellable then
 		if SoulboundOnly and not unwantedGrey then
@@ -458,10 +464,12 @@ local function handleItemClick(self, button)
 	local unwantedGrey = quality == 0 and AutoSellGreyItems
 	local unwantedWhite = quality == 1 and AutoSellWhiteItems
 	local unwantedGreen = quality == 2 and AutoSellGreenItems
+	local unwantedBlue = quality == 3 and AutoSellBlueItems
+	local unwantedPurple = quality == 4 and AutoSellPurpleItems
 
 	local unwantedItem = isUnwantedItem(itemID, itemType, subType, equipSlot)
 
-	local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedItem)
+	local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedBlue or unwantedPurple or unwantedItem)
 
 	if autoSellable then
 		if SoulboundOnly and not unwantedGrey then
