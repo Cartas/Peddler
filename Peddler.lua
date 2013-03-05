@@ -185,7 +185,17 @@ local function showCoinTexture(itemButton)
 	if not itemButton.coins then
 		local texture = itemButton:CreateTexture(nil, "OVERLAY")
 		texture:SetTexture("Interface\\AddOns\\Peddler\\coins")
-		texture:SetPoint("BOTTOMRIGHT", -3, 1)
+
+		-- Default padding for making bottom-right look great.
+		local paddingX, paddingY = -3, 1
+		if string.find(IconPlacement, "TOP") then
+			paddingY = -3
+		end
+		if string.find(IconPlacement, "LEFT") then
+			paddingX = 1
+		end
+
+		texture:SetPoint(IconPlacement, paddingX, paddingY)
 
 		itemButton.coins = texture
 	end
@@ -420,6 +430,10 @@ local function handleEvent(self, event, addonName)
 
 		if not ModifierKey then
 			ModifierKey = "CTRL"
+		end
+
+		if not IconPlacement then
+			IconPlacement = "BOTTOMRIGHT"
 		end
 
 		countLimit = 400
