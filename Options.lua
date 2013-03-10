@@ -66,7 +66,7 @@ end
 function frame:CreateOptions()
 	local title = self:CreateFontString(nil, nil, "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", 16, -16)
-	title:SetText("Peddler v3.5")
+	title:SetText("Peddler v3.7")
 
 	local sellLimit = createCheckBox(self, title, 1, SellLimit, "Sell Limit", "Limits the amount of items sold in one go, so you may buy all items back.")
 	sellLimit:SetScript("PostClick", function(self, button, down)
@@ -90,7 +90,7 @@ function frame:CreateOptions()
 
 	local iconPlacementLabel = self:CreateFontString(nil, nil, "GameFontNormal")
 	iconPlacementLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 16, -150)
-	iconPlacementLabel:SetText("Icon Placement (the corner the coins icon should appear in):")
+	iconPlacementLabel:SetText("Icon Placement (the corner the coins icon should appear in - please reload to apply changes):")
 
 	local iconPlacement = CreateFrame("Button", "IconPlacementDropDown", self, "UIDropDownMenuTemplate")
 	iconPlacement:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 16, -167)

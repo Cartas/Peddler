@@ -17,7 +17,7 @@ local WEAPON = ns.WEAPON
 local WANTED_ITEMS = ns.WANTED_ITEMS
 
 local BUYBACK_COUNT = 12
-	local _, PLAYERS_CLASS = UnitClass('player')
+local _, PLAYERS_CLASS = UnitClass('player')
 
 -- The typical life-cycle of the addon goes as follows:
 --   1. Initially delays for 400ms before attempting to mark wares for the first time.
@@ -76,7 +76,31 @@ local function isSoulbound(itemLink)
 	return ((secondLine == ITEM_SOULBOUND or secondLine == ITEM_BIND_ON_PICKUP) or (thirdLine == ITEM_SOULBOUND or thirdLine == ITEM_BIND_ON_PICKUP) or (fourthLine == ITEM_SOULBOUND or fourthLine == ITEM_BIND_ON_PICKUP))
 end
 
-local function isUnwantedItem(itemID, itemType, subType, equipSlot)
+-- Serves to get the item's itemID + suffixID.
+local function getUniqueItemID(bagNumber, slotNumber)
+	local itemString = GetContainerItemLink(bagNumber, slotNumber)
+	if not itemString then
+		return
+	end
+
+	local _, itemID, _, _, _, _, _, suffixID = strsplit(":", itemString)
+	itemID = tonumber(itemID)
+	suffixID = tonumber(suffixID)
+
+	if not itemID then
+		return
+	end
+
+	local uniqueItemID = itemID
+	if suffixID ~= 0 then
+		uniqueItemID = itemID .. suffixID
+	end
+
+	return itemID, uniqueItemID
+end
+
+
+local function isUnwantedItem(itemType, subType, equipSlot)
 	local unwantedItem = false
 
 	-- Of course we never want to sell cloaks!
@@ -94,7 +118,7 @@ local function isUnwantedItem(itemID, itemType, subType, equipSlot)
 	return unwantedItem
 end
 
-local function itemIsToBeSold(itemID)
+local function itemIsToBeSold(itemID, uniqueItemID)
 	local _, link, quality, itemLevel, _, itemType, subType, _, equipSlot, _, price = GetItemInfo(itemID)
 
 	-- No price?  No sale!
@@ -102,7 +126,7 @@ local function itemIsToBeSold(itemID)
 		return
 	end
 
-	local unmarkedItem = UnmarkedItems[itemID]
+	local unmarkedItem = UnmarkedItems[uniqueItemID]
 
 	local unwantedGrey = quality == 0 and AutoSellGreyItems and not unmarkedItem
 	local unwantedWhite = quality == 1 and AutoSellWhiteItems and not unmarkedItem
@@ -110,7 +134,7 @@ local function itemIsToBeSold(itemID)
 	local unwantedBlue = quality == 3 and AutoSellBlueItems and not unmarkedItem
 	local unwantedPurple = quality == 4 and AutoSellPurpleItems and not unmarkedItem
 
-	local unwantedItem = isUnwantedItem(itemID, itemType, subType, equipSlot) and not unmarkedItem
+	local unwantedItem = isUnwantedItem(itemType, subType, equipSlot) and not unmarkedItem
 
 	local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedBlue or unwantedPurple or unwantedItem)
 
@@ -121,7 +145,7 @@ local function itemIsToBeSold(itemID)
 		end
 	end
 
-	return ItemsToSell[itemID] or autoSellable
+	return ItemsToSell[uniqueItemID] or autoSellable
 end
 
 local function peddleGoods()
@@ -131,9 +155,9 @@ local function peddleGoods()
 	for bagNumber = 0, 4 do
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
 		for slotNumber = 1, bagsSlotCount do
-			local itemID = GetContainerItemID(bagNumber, slotNumber)
+			local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
 
-			if itemID and itemIsToBeSold(itemID) then
+			if uniqueItemID and itemIsToBeSold(itemID, uniqueItemID) then
 				local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
 
 				if itemButton.coins then
@@ -217,10 +241,10 @@ local function showCoinTexture(itemButton)
 end
 
 local function checkItem(bagNumber, slotNumber, itemButton)
-	local itemID = GetContainerItemID(bagNumber, slotNumber)
+	local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
 
-	if itemID then
-		if itemIsToBeSold(itemID) then
+	if uniqueItemID then
+		if itemIsToBeSold(itemID, uniqueItemID) then
 			showCoinTexture(itemButton)
 		elseif itemButton.coins then
 			itemButton.coins:Hide()
@@ -465,10 +489,7 @@ local function handleItemClick(self, button)
 	local bagNumber = self:GetParent():GetID()
 	local slotNumber = self:GetID()
 
-	local itemID = GetContainerItemID(bagNumber, slotNumber)
-	if not itemID then
-		return
-	end
+	local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
 
 	local _, link, quality, _, _, itemType, subType, _, equipSlot, _, price = GetItemInfo(itemID)
 	if price == 0 then
@@ -481,7 +502,7 @@ local function handleItemClick(self, button)
 	local unwantedBlue = quality == 3 and AutoSellBlueItems
 	local unwantedPurple = quality == 4 and AutoSellPurpleItems
 
-	local unwantedItem = isUnwantedItem(itemID, itemType, subType, equipSlot)
+	local unwantedItem = isUnwantedItem(itemType, subType, equipSlot)
 
 	local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedBlue or unwantedPurple or unwantedItem)
 
@@ -493,16 +514,17 @@ local function handleItemClick(self, button)
 	end
 
 	if autoSellable then
-		if UnmarkedItems[itemID] then
-			UnmarkedItems[itemID] = nil
+		if UnmarkedItems[uniqueItemID] then
+			print(uniqueItemID)
+			UnmarkedItems[uniqueItemID] = nil
 		else
-			UnmarkedItems[itemID] = 1
-			ItemsToSell[itemID] = nil
+			UnmarkedItems[uniqueItemID] = 1
+			ItemsToSell[uniqueItemID] = nil
 		end
-	elseif ItemsToSell[itemID] then
-		ItemsToSell[itemID] = nil
+	elseif ItemsToSell[uniqueItemID] then
+		ItemsToSell[uniqueItemID] = nil
 	else
-		ItemsToSell[itemID] = 1
+		ItemsToSell[uniqueItemID] = 1
 	end
 
 	markWares()
