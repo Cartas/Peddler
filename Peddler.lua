@@ -491,6 +491,11 @@ local function handleItemClick(self, button)
 
 	local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
 
+	-- Empty bag slots cannot be sold, silly!
+	if not itemID then
+		return
+	end
+
 	local _, link, quality, _, _, itemType, subType, _, equipSlot, _, price = GetItemInfo(itemID)
 	if price == 0 then
 		return
