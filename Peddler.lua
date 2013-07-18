@@ -363,6 +363,23 @@ local function markCargBagsNivayaBags()
 	end
 end
 
+local function markMonoBags()
+	local totalSlotCount = 0
+	for bagNumber = 0, 4 do
+		totalSlotCount = totalSlotCount + GetContainerNumSlots(bagNumber)
+	end
+
+	for slotNumber = 1, totalSlotCount do
+		local itemButton = _G["m_BagsSlot" .. slotNumber]
+		if itemButton then
+			local itemsBagNumber = itemButton:GetParent():GetID()
+			local itemsSlotNumber = itemButton:GetID()
+			checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+		end
+		slotNumber = slotNumber + 1
+	end
+end
+
 -- Special thanks to Tymesink from WowInterface for this one.
 local function markfamBagsBags()
 	for bagNumber = 0, 4 do
@@ -412,10 +429,12 @@ local function markWares()
 		markAdiBagBags()
 	elseif IsAddOnLoaded("ArkInventory") then
 		markArkInventoryBags()
-	elseif IsAddOnLoaded("cargBags_Nivaya") then
-		markCargBagsNivayaBags()
 	elseif IsAddOnLoaded("famBags") then
 		markfamBagsBags()
+	elseif IsAddOnLoaded("cargBags_Nivaya") then
+		markCargBagsNivayaBags()
+	elseif IsAddOnLoaded("m_Bags") then
+		markMonoBags()
 	else
 		usingDefaultBags = true
 		markNormalBags()
@@ -520,7 +539,6 @@ local function handleItemClick(self, button)
 
 	if autoSellable then
 		if UnmarkedItems[uniqueItemID] then
-			print(uniqueItemID)
 			UnmarkedItems[uniqueItemID] = nil
 		else
 			UnmarkedItems[uniqueItemID] = 1
