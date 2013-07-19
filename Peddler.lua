@@ -92,7 +92,7 @@ local function getUniqueItemID(bagNumber, slotNumber)
 	end
 
 	local uniqueItemID = itemID
-	if suffixID ~= 0 then
+	if suffixID and suffixID ~= 0 then
 		uniqueItemID = itemID .. suffixID
 	end
 
@@ -355,9 +355,13 @@ local function markCargBagsNivayaBags()
 	for slotNumber = 1, totalSlotCount do
 		local itemButton = _G["NivayaSlot" .. slotNumber]
 		if itemButton then
-			local itemsBagNumber = itemButton:GetParent():GetID()
-			local itemsSlotNumber = itemButton:GetID()
-			checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+			local itemsBag = itemButton:GetParent()
+
+			if itemsBag then
+				local itemsBagNumber = itemsBag:GetID()
+				local itemsSlotNumber = itemButton:GetID()
+				checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+			end
 		end
 		slotNumber = slotNumber + 1
 	end
