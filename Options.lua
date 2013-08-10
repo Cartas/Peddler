@@ -78,6 +78,12 @@ function frame:CreateOptions()
 		Silent = self:GetChecked()
 	end)
 
+	local silenceSaleSummary = createCheckBox(self, title, 3, SilenceSaleSummary, "Silence Sale Summary", "Silence the sale summary.")
+	silenceSaleSummary:SetScript("PostClick", function(self, button, down)
+		SilenceSaleSummary = self:GetChecked()
+	end)
+	silenceSaleSummary:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 190, 2 * -26)
+
 	local modifierKeyLabel = self:CreateFontString(nil, nil, "GameFontNormal")
 	modifierKeyLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 16, -90)
 	modifierKeyLabel:SetText("Modifier Key (used with right-click to mark/unmark items):")

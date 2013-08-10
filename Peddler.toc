@@ -2,7 +2,7 @@
 ## Title: Peddler
 ## Notes: Automatically sells previously designated items!
 ## Author: Cartas @ GrimBatol
-## SavedVariables: ModifierKey, SellLimit, Silent, IconPlacement
+## SavedVariables: ModifierKey, SellLimit, Silent, SilenceSaleSummary, IconPlacement
 ## SavedVariablesPerCharacter: ItemsToSell, UnmarkedItems, AutoSellGreyItems, AutoSellWhiteItems, AutoSellGreenItems, AutoSellBlueItems, AutoSellPurpleItems, AutoSellUnwantedItems, SoulboundOnly
 
 vo\WantedItems.lua

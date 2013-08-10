@@ -167,23 +167,26 @@ local function peddleGoods()
 				local _, amount = GetContainerItemInfo(bagNumber, slotNumber)
 
 				local _, _, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
-				if price and price > 0 and not Silent then
+				if price and price > 0 then
 					price = price * amount
 
-					if total == 0 then
+					if total == 0 and (not Silent or not SilenceSaleSummary) then
 						print("Peddler sold:")
 					end
 
 					total = total + price
-					local _, link = GetItemInfo(itemID)
-					local output = "    " .. sellCount + 1 .. '. ' .. link
 
-					if amount > 1 then
-						output = output .. "x" .. amount
+					if not Silent then
+						local _, link = GetItemInfo(itemID)
+						local output = "    " .. sellCount + 1 .. '. ' .. link
+
+						if amount > 1 then
+							output = output .. "x" .. amount
+						end
+
+						output = output .. " for " .. priceToGold(price)
+						print(output)
 					end
-
-					output = output .. " for " .. priceToGold(price)
-					print(output)
 				end
 
 				-- Actually sell the item!
@@ -200,7 +203,7 @@ local function peddleGoods()
 		end
 	end
 
-	if total > 0 and not Silent then
+	if total > 0 and not SilenceSaleSummary then
 		print("For a total of " .. priceToGold(total))
 	end
 end
