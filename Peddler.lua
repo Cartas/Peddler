@@ -352,6 +352,9 @@ local function markCargBagsNivayaBags()
 		totalSlotCount = totalSlotCount + GetContainerNumSlots(bagNumber)
 	end
 
+	-- Somehow, Nivaya can have higher slot-numbers than actual bag slots exist...
+	totalSlotCount = totalSlotCount * 2
+
 	for slotNumber = 1, totalSlotCount do
 		local itemButton = _G["NivayaSlot" .. slotNumber]
 		if itemButton then
