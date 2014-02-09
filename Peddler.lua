@@ -390,6 +390,16 @@ local function markMonoBags()
 	end
 end
 
+local function markDerpyBags()
+	for bagNumber = 0, 4 do
+		local bagsSlotCount = GetContainerNumSlots(bagNumber)
+		for slotNumber = 1, bagsSlotCount do
+			local itemButton = _G["StuffingBag" .. bagNumber .. "_" .. slotNumber]
+			checkItem(bagNumber, slotNumber, itemButton)
+		end
+	end
+end
+
 -- Special thanks to Tymesink from WowInterface for this one.
 local function markfamBagsBags()
 	for bagNumber = 0, 4 do
@@ -445,6 +455,8 @@ local function markWares()
 		markCargBagsNivayaBags()
 	elseif IsAddOnLoaded("m_Bags") then
 		markMonoBags()
+	elseif IsAddOnLoaded("DerpyStuffing") then
+		markDerpyBags()
 	else
 		usingDefaultBags = true
 		markNormalBags()
