@@ -400,6 +400,16 @@ local function markDerpyBags()
 	end
 end
 
+local function markElvUIBags()
+	for bagNumber = 0, 4 do
+		local bagsSlotCount = GetContainerNumSlots(bagNumber)
+		for slotNumber = 1, bagsSlotCount do
+			local itemButton = _G["ElvUI_ContainerFrameBag" .. bagNumber .. "Slot" .. slotNumber]
+			checkItem(bagNumber, slotNumber, itemButton)
+		end
+	end
+end
+
 -- Special thanks to Tymesink from WowInterface for this one.
 local function markfamBagsBags()
 	for bagNumber = 0, 4 do
@@ -436,6 +446,7 @@ local function markNormalBags()
 	end
 end
 
+-- TODO: Split these into seperate, well-coded things already.
 local function markWares()
 	if IsAddOnLoaded("Baggins") then
 		markBagginsBags()
@@ -457,6 +468,8 @@ local function markWares()
 		markMonoBags()
 	elseif IsAddOnLoaded("DerpyStuffing") then
 		markDerpyBags()
+	elseif IsAddOnLoaded("ElvUI") and _G["ElvUI_ContainerFrame"] then
+		markElvUIBags()
 	else
 		usingDefaultBags = true
 		markNormalBags()
