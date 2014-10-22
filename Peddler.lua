@@ -318,7 +318,7 @@ local function markAdiBagBags()
 	end
 
 	-- For some reason, AdiBags can have way more buttons than the actual amount of bag slots... not sure how or why.
-	totalSlotCount = totalSlotCount + 30
+	totalSlotCount = totalSlotCount + 60
 
 	if totalSlotCount < 100 then
 		totalSlotCount = 100
@@ -343,7 +343,7 @@ local function markArkInventoryBags()
 	for bagNumber = 0, 4 do
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
 		for slotNumber = 1, bagsSlotCount do
-			local itemButton = _G["ARKINV_Frame1ContainerBag" .. bagNumber + 1 .. "Item" .. slotNumber]
+			local itemButton = _G["ARKINV_Frame1ScrollContainerBag" .. bagNumber + 1 .. "Item" .. slotNumber]
 			checkItem(bagNumber, slotNumber, itemButton)
 		end
 	end
