@@ -410,6 +410,33 @@ local function markElvUIBags()
 	end
 end
 
+local function markInventorianBags()
+	for bagNumber = 0, NUM_CONTAINER_FRAMES do
+		for slotNumber = 1, 36 do
+			local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. slotNumber]
+
+			if itemButton then
+				local itemButtonParent = itemButton:GetParent()
+				if itemButtonParent then
+					local itemsBagNumber = itemButtonParent:GetID()
+					local itemsSlotNumber = itemButton:GetID()
+					checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+				end
+			end
+		end
+	end
+end
+
+-- Special thanks to Xodiv of Curse for this one!
+local function markLiteBagBags()
+    for i = 1, LiteBagInventory.size do
+        local button = LiteBagInventory.itemButtons[i]
+        local itemsBagNumber = button:GetParent():GetID()
+        local itemsSlotNumber = button:GetID()
+        checkItem(itemsBagNumber, itemsSlotNumber, button)
+    end
+end
+
 -- Special thanks to Tymesink from WowInterface for this one.
 local function markfamBagsBags()
 	for bagNumber = 0, 4 do
@@ -446,7 +473,7 @@ local function markNormalBags()
 	end
 end
 
--- TODO: Split these into seperate, well-coded things already.
+-- TODO: Split these into separate, well-coded things already.
 local function markWares()
 	if IsAddOnLoaded("Baggins") then
 		markBagginsBags()
@@ -470,6 +497,10 @@ local function markWares()
 		markDerpyBags()
 	elseif IsAddOnLoaded("ElvUI") and _G["ElvUI_ContainerFrame"] then
 		markElvUIBags()
+	elseif IsAddOnLoaded("Inventorian") then
+		markInventorianBags()
+	elseif IsAddOnLoaded("LiteBag") then
+		markLiteBagBags()
 	else
 		usingDefaultBags = true
 		markNormalBags()
