@@ -39,6 +39,7 @@ local function priceToGold(price)
 end
 
 local peddler = CreateFrame("Frame", nil, UIParent)
+local salesDelay = CreateFrame("Frame")
 local usingDefaultBags = false
 local markCounter = 1
 local countLimit = 1
@@ -151,6 +152,7 @@ end
 local function peddleGoods()
 	local total = 0
 	local sellCount = 0
+	local sellDelay = 0
 
 	for bagNumber = 0, 4 do
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
@@ -190,8 +192,22 @@ local function peddleGoods()
 				end
 
 				-- Actually sell the item!
-				UseContainerItem(bagNumber, slotNumber)
+				if (sellDelay > 0) then
+					local waitAnimationGroup = salesDelay:CreateAnimationGroup("sellDelay" .. sellCount)
+					local waitAnimation = waitAnimationGroup:CreateAnimation("Translation")
+					waitAnimation:SetDuration(sellDelay)
+					waitAnimation:SetSmoothing("OUT")
+					waitAnimationGroup:Play()
+
+					waitAnimationGroup:SetScript("OnFinished", function()
+						UseContainerItem(bagNumber, slotNumber)
+					end)
+				else
+					UseContainerItem(bagNumber, slotNumber)
+				end
+
 				sellCount = sellCount + 1
+				sellDelay = math.floor(sellCount / 6)
 				if (SellLimit and sellCount >= BUYBACK_COUNT) then
 					break
 				end
