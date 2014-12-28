@@ -6,8 +6,11 @@ local GetContainerItemID = GetContainerItemID
 local GetItemInfo = GetItemInfo
 local GetItemCount = GetItemCount
 local GetContainerItemInfo = GetContainerItemInfo
-local UseContainerItem = UseContainerItem
+local PickupContainerItem = PickupContainerItem
+local PickupMerchantItem = PickupMerchantItem
 local IsControlKeyDown = IsControlKeyDown
+local IsShiftKeyDown = IsShiftKeyDown
+local IsAltKeyDown = IsAltKeyDown
 local UnitClass = UnitClass
 local next = next
 local Baggins = Baggins
@@ -200,10 +203,12 @@ local function peddleGoods()
 					waitAnimationGroup:Play()
 
 					waitAnimationGroup:SetScript("OnFinished", function()
-						UseContainerItem(bagNumber, slotNumber)
+						PickupContainerItem(bagNumber, slotNumber)
+						PickupMerchantItem()
 					end)
 				else
-					UseContainerItem(bagNumber, slotNumber)
+					PickupContainerItem(bagNumber, slotNumber)
+					PickupMerchantItem()
 				end
 
 				sellCount = sellCount + 1
@@ -445,12 +450,12 @@ end
 
 -- Special thanks to Xodiv of Curse for this one!
 local function markLiteBagBags()
-    for i = 1, LiteBagInventory.size do
-        local button = LiteBagInventory.itemButtons[i]
-        local itemsBagNumber = button:GetParent():GetID()
-        local itemsSlotNumber = button:GetID()
-        checkItem(itemsBagNumber, itemsSlotNumber, button)
-    end
+	for i = 1, LiteBagInventory.size do
+		local button = LiteBagInventory.itemButtons[i]
+		local itemsBagNumber = button:GetParent():GetID()
+		local itemsSlotNumber = button:GetID()
+		checkItem(itemsBagNumber, itemsSlotNumber, button)
+	end
 end
 
 -- Special thanks to Tymesink from WowInterface for this one.
