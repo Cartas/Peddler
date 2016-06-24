@@ -1,4 +1,4 @@
-## Interface: 60000
+## Interface: 60200
 ## Title: Peddler
 ## Notes: Automatically sells previously designated items!
 ## Author: Cartas @ GrimBatol
