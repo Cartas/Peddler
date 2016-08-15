@@ -29,7 +29,7 @@ local function changeModifierKey(self)
 end
 
 local function initModifierKeys(self, level)
-	local modifierKeys = {"CTRL", "ALT", "SHIFT"}
+	local modifierKeys = {"CTRL", "ALT", "SHIFT", "CTRL-SHIFT", "CTRL-ALT", "ALT-SHIFT"}
 	for index, modifierKey in pairs(modifierKeys) do
 		local modifierKeyOption = UIDropDownMenu_CreateInfo()
 		modifierKeyOption.text = modifierKey
@@ -66,7 +66,7 @@ end
 function frame:CreateOptions()
 	local title = self:CreateFontString(nil, nil, "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", 16, -16)
-	title:SetText("Peddler v3.7")
+	title:SetText("Peddler v5.0")
 
 	local sellLimit = createCheckBox(self, title, 1, SellLimit, "Sell Limit", "Limits the amount of items sold in one go, so you may buy all items back.")
 	sellLimit:SetScript("PostClick", function(self, button, down)

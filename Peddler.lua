@@ -563,7 +563,7 @@ local function handleEvent(self, event, addonName)
 		end
 
 		if not IconPlacement then
-			IconPlacement = "BOTTOMRIGHT"
+			IconPlacement = "BOTTOMLEFT"
 		end
 
 		countLimit = 400
@@ -586,7 +586,11 @@ end
 peddler:SetScript("OnEvent", handleEvent)
 
 local function handleItemClick(self, button)
-	local modifierDown = (ModifierKey == 'CTRL' and IsControlKeyDown() or (ModifierKey == 'SHIFT' and IsShiftKeyDown() or (ModifierKey == 'ALT' and IsAltKeyDown())))
+	local ctrlKeyDown = IsControlKeyDown()
+	local shiftKeyDown = IsShiftKeyDown()
+	local altKeyDown = IsAltKeyDown()
+
+	local modifierDown = (ModifierKey == 'CTRL' and ctrlKeyDown or (ModifierKey == 'SHIFT' and shiftKeyDown or (ModifierKey == 'ALT' and altKeyDown or (ModifierKey == 'CTRL-SHIFT' and ctrlKeyDown and shiftKeyDown or (ModifierKey == 'CTRL-ALT' and ctrlKeyDown and altKeyDown or (ModifierKey == 'ALT-SHIFT' and altKeyDown and shiftKeyDown))))))
 	local usingPeddler = modifierDown and button == 'RightButton'
 	if not usingPeddler then
 		return

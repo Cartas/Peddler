@@ -33,6 +33,7 @@ local DAGGER = "Daggers"
 local FIST_WEAPON = "Fist Weapons"
 local POLEARM = "Polearms"
 local STAFF = "Staves"
+local WARGLAIVES = "Warglaives"
 
 local BOW = "Bows"
 local CROSSBOW = "Crossbows"
@@ -46,6 +47,11 @@ ns.WANTED_ITEMS = {
 	['DEATHKNIGHT'] = {
 		[ARMOUR] = {PLATE, SIGIL, MISC},
 		[WEAPON] = {ONE_HANDED_AXE, TWO_HANDED_AXE, ONE_HANDED_MACE, TWO_HANDED_MACE, ONE_HANDED_SWORD, TWO_HANDED_SWORD, POLEARM, FISHING_POLE}
+	},
+
+	['DEMONHUNTER'] = {
+		[ARMOUR] = {LEATHER, MISC},
+		[WEAPON] = {WARGLAIVES, ONE_HANDED_AXE, ONE_HANDED_SWORD, DAGGER, FIST_WEAPON, FISHING_POLE}
 	},
 
 	['DRUID'] = {
