@@ -9,7 +9,7 @@ One who travels about selling wares for a living.*
 
 ##Description
 
-*Peddler* simply allows you to flag items that you plan to sell, automatically selling them later when you interact with a vendor. It automatically flags gray items you loot to be sold, but you're free to un-flag them.
+*Peddler* simply allows you to flag items that you plan to sell, automatically selling them later when you interact with a vendor. It automatically flags grey items you loot to be sold, but you're free to un-flag them.
 
 While going back to complete low-level quests with regards to getting a few quest achievements, I found my bags full of green quest rewards that I would try to sell whenever I could. However, after leaving a vendor I would notice that I'd missed one or two items; I made this addon so that I could immediately mark the newly received items without having to scour my bags for them later on!
 
