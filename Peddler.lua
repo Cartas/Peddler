@@ -46,6 +46,7 @@ local salesDelay = CreateFrame("Frame")
 local usingDefaultBags = false
 local markCounter = 1
 local countLimit = 1
+local listeningToRewards = false
 
 peddler:RegisterEvent("PLAYER_ENTERING_WORLD")
 peddler:RegisterEvent("ADDON_LOADED")
@@ -81,8 +82,7 @@ local function isSoulbound(itemLink)
 end
 
 -- Serves to get the item's itemID + suffixID.
-local function getUniqueItemID(bagNumber, slotNumber)
-	local itemString = GetContainerItemLink(bagNumber, slotNumber)
+local function parseItemString(itemString)
 	if not itemString then
 		return
 	end
@@ -103,6 +103,10 @@ local function getUniqueItemID(bagNumber, slotNumber)
 	return itemID, uniqueItemID
 end
 
+local function getUniqueItemID(bagNumber, slotNumber)
+	local itemString = GetContainerItemLink(bagNumber, slotNumber)
+	return parseItemString(itemString)
+end
 
 local function isUnwantedItem(itemType, subType, equipSlot)
 	local unwantedItem = false
@@ -264,9 +268,7 @@ local function showCoinTexture(itemButton)
 	end
 end
 
-local function checkItem(bagNumber, slotNumber, itemButton)
-	local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
-
+local function displayCoins(itemID, uniqueItemID, itemButton)
 	if uniqueItemID then
 		if itemIsToBeSold(itemID, uniqueItemID) then
 			showCoinTexture(itemButton)
@@ -276,6 +278,11 @@ local function checkItem(bagNumber, slotNumber, itemButton)
 	elseif itemButton.coins then
 		itemButton.coins:Hide()
 	end
+end
+
+local function checkItem(bagNumber, slotNumber, itemButton)
+	local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
+	displayCoins(itemID, uniqueItemID, itemButton)
 end
 
 local function markBagginsBags()
@@ -469,6 +476,16 @@ local function markfamBagsBags()
 	end
 end
 
+local function markLUIBags()
+	for bagNumber = 0, 4 do
+		local bagsSlotCount = GetContainerNumSlots(bagNumber)
+		for slotNumber = 1, bagsSlotCount do
+			local itemButton = _G["LUIBags_Item" .. bagNumber .. "_" .. slotNumber]
+			checkItem(bagNumber, slotNumber, itemButton)
+		end
+	end
+end
+
 -- Also works for bBag.
 local function markNormalBags()
 	for containerNumber = 0, 4 do
@@ -516,12 +533,14 @@ local function markWares()
 		markMonoBags()
 	elseif IsAddOnLoaded("DerpyStuffing") then
 		markDerpyBags()
-	elseif IsAddOnLoaded("ElvUI") and _G["ElvUI_ContainerFrame"] then
-		markElvUIBags()
 	elseif IsAddOnLoaded("Inventorian") then
 		markInventorianBags()
 	elseif IsAddOnLoaded("LiteBag") then
 		markLiteBagBags()
+	elseif IsAddOnLoaded("ElvUI") and _G["ElvUI_ContainerFrame"] then
+		markElvUIBags()
+	elseif IsAddOnLoaded("LUI") and _G["LUIBags_Item0_1"] then
+		markLUIBags()
 	else
 		usingDefaultBags = true
 		markNormalBags()
@@ -546,25 +565,34 @@ local function handleBagginsOpened()
 	end
 end
 
+local function setupDefaults()
+	-- Setup default settings.
+	if not ItemsToSell then
+		ItemsToSell = {}
+	end
+
+	if not UnmarkedItems then
+		UnmarkedItems = {}
+	end
+
+	if not ModifierKey then
+		ModifierKey = "CTRL"
+	end
+
+	if not IconPlacement then
+		IconPlacement = "BOTTOMLEFT"
+	end
+
+	if AutoSellGreyItems == nil then
+		AutoSellGreyItems = true
+	end
+end
+
 local function handleEvent(self, event, addonName)
 	if event == "ADDON_LOADED" and addonName == "Peddler" then
 		peddler:UnregisterEvent("ADDON_LOADED")
 
-		if not ItemsToSell then
-			ItemsToSell = {}
-		end
-
-		if not UnmarkedItems then
-			UnmarkedItems = {}
-		end
-
-		if not ModifierKey then
-			ModifierKey = "CTRL"
-		end
-
-		if not IconPlacement then
-			IconPlacement = "BOTTOMLEFT"
-		end
+		setupDefaults()
 
 		countLimit = 400
 		peddler:SetScript("OnUpdate", onUpdate)
@@ -585,27 +613,7 @@ end
 
 peddler:SetScript("OnEvent", handleEvent)
 
-local function handleItemClick(self, button)
-	local ctrlKeyDown = IsControlKeyDown()
-	local shiftKeyDown = IsShiftKeyDown()
-	local altKeyDown = IsAltKeyDown()
-
-	local modifierDown = (ModifierKey == 'CTRL' and ctrlKeyDown or (ModifierKey == 'SHIFT' and shiftKeyDown or (ModifierKey == 'ALT' and altKeyDown or (ModifierKey == 'CTRL-SHIFT' and ctrlKeyDown and shiftKeyDown or (ModifierKey == 'CTRL-ALT' and ctrlKeyDown and altKeyDown or (ModifierKey == 'ALT-SHIFT' and altKeyDown and shiftKeyDown))))))
-	local usingPeddler = modifierDown and button == 'RightButton'
-	if not usingPeddler then
-		return
-	end
-
-	local bagNumber = self:GetParent():GetID()
-	local slotNumber = self:GetID()
-
-	local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
-
-	-- Empty bag slots cannot be sold, silly!
-	if not itemID then
-		return
-	end
-
+local function toggleItemPeddling(itemID, uniqueItemID)
 	local _, link, quality, _, _, itemType, subType, _, equipSlot, _, price = GetItemInfo(itemID)
 	if price == 0 then
 		return
@@ -640,8 +648,81 @@ local function handleItemClick(self, button)
 	else
 		ItemsToSell[uniqueItemID] = 1
 	end
+end
+
+local function handleItemClick(self, button)
+	local ctrlKeyDown = IsControlKeyDown()
+	local shiftKeyDown = IsShiftKeyDown()
+	local altKeyDown = IsAltKeyDown()
+
+	local modifierDown = (ModifierKey == 'CTRL' and ctrlKeyDown or (ModifierKey == 'SHIFT' and shiftKeyDown or (ModifierKey == 'ALT' and altKeyDown or (ModifierKey == 'CTRL-SHIFT' and ctrlKeyDown and shiftKeyDown or (ModifierKey == 'CTRL-ALT' and ctrlKeyDown and altKeyDown or (ModifierKey == 'ALT-SHIFT' and altKeyDown and shiftKeyDown))))))
+	local usingPeddler = (modifierDown and button == 'RightButton')
+	if not usingPeddler then
+		return
+	end
+
+	local bagNumber = self:GetParent():GetID()
+	local slotNumber = self:GetID()
+
+	local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
+
+	-- Empty bag slots cannot be sold, silly!
+	if not itemID then
+		return
+	end
+
+	toggleItemPeddling(itemID, uniqueItemID)
 
 	markWares()
 end
 
 hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", handleItemClick)
+
+
+-- Quest Reward handling.
+local function checkQuestReward(itemButton, toggle)
+	local rewardIndex = itemButton:GetID()
+	local itemString = GetQuestLogItemLink("reward", rewardIndex)
+	local itemID, uniqueItemID = parseItemString(itemString)
+
+	if toggle then
+		toggleItemPeddling(itemID, uniqueItemID)
+	end
+
+	displayCoins(itemID, uniqueItemID, itemButton)
+end
+
+local function handleQuestFrameItemClick(self, button)
+	local altKeyDown = IsAltKeyDown()
+
+	if not altKeyDown then
+		return
+	end
+
+	checkQuestReward(self, true)
+
+	markWares()
+end
+
+local function onQuestRewardsShow()
+	for i = 1, 6 do
+		local itemButton = _G["MapQuestInfoRewardsFrameQuestInfoItem" .. i]
+		if itemButton then
+			checkQuestReward(itemButton, false)
+		end
+	end
+
+	if listeningToRewards then
+		return
+	end
+
+	listeningToRewards = true
+
+	MapQuestInfoRewardsFrameQuestInfoItem1:HookScript("OnClick", handleQuestFrameItemClick)
+	MapQuestInfoRewardsFrameQuestInfoItem2:HookScript("OnClick", handleQuestFrameItemClick)
+	MapQuestInfoRewardsFrameQuestInfoItem3:HookScript("OnClick", handleQuestFrameItemClick)
+	MapQuestInfoRewardsFrameQuestInfoItem4:HookScript("OnClick", handleQuestFrameItemClick)
+	MapQuestInfoRewardsFrameQuestInfoItem5:HookScript("OnClick", handleQuestFrameItemClick)
+	MapQuestInfoRewardsFrameQuestInfoItem6:HookScript("OnClick", handleQuestFrameItemClick)
+end
+MapQuestInfoRewardsFrame:HookScript("OnShow", onQuestRewardsShow)
