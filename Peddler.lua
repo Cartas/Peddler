@@ -6,6 +6,7 @@ local GetContainerItemID = GetContainerItemID
 local GetItemInfo = GetItemInfo
 local GetItemCount = GetItemCount
 local GetContainerItemInfo = GetContainerItemInfo
+local GetQuestLogItemLink = GetQuestLogItemLink
 local PickupContainerItem = PickupContainerItem
 local PickupMerchantItem = PickupMerchantItem
 local IsControlKeyDown = IsControlKeyDown
@@ -46,7 +47,6 @@ local salesDelay = CreateFrame("Frame")
 local usingDefaultBags = false
 local markCounter = 1
 local countLimit = 1
-local listeningToRewards = false
 
 peddler:RegisterEvent("PLAYER_ENTERING_WORLD")
 peddler:RegisterEvent("ADDON_LOADED")
@@ -680,16 +680,26 @@ hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", handleItemClick)
 
 
 -- Quest Reward handling.
+local listeningToRewards = {}
 local function checkQuestReward(itemButton, toggle)
 	local rewardIndex = itemButton:GetID()
-	local itemString = GetQuestLogItemLink("reward", rewardIndex)
-	local itemID, uniqueItemID = parseItemString(itemString)
 
-	if toggle then
-		toggleItemPeddling(itemID, uniqueItemID)
+	local testReward = function(itemString)
+		if not itemString then
+			return
+		end
+
+		local itemID, uniqueItemID = parseItemString(itemString)
+
+		if toggle then
+			toggleItemPeddling(itemID, uniqueItemID)
+		end
+
+		displayCoins(itemID, uniqueItemID, itemButton)
 	end
 
-	displayCoins(itemID, uniqueItemID, itemButton)
+	testReward(GetQuestLogItemLink("reward", rewardIndex))
+	testReward(GetQuestLogItemLink("choice", rewardIndex))
 end
 
 local function handleQuestFrameItemClick(self, button)
@@ -704,25 +714,28 @@ local function handleQuestFrameItemClick(self, button)
 	markWares()
 end
 
-local function onQuestRewardsShow()
+local function setupQuestFrame(frameBaseName)
 	for i = 1, 6 do
-		local itemButton = _G["MapQuestInfoRewardsFrameQuestInfoItem" .. i]
+		local frameName = frameBaseName .. i
+		local itemButton = _G[frameName]
 		if itemButton then
 			checkQuestReward(itemButton, false)
+
+			if not listeningToRewards[frameName] then
+				listeningToRewards[frameName] = true
+				itemButton:HookScript("OnClick", handleQuestFrameItemClick)
+			end
 		end
 	end
-
-	if listeningToRewards then
-		return
-	end
-
-	listeningToRewards = true
-
-	MapQuestInfoRewardsFrameQuestInfoItem1:HookScript("OnClick", handleQuestFrameItemClick)
-	MapQuestInfoRewardsFrameQuestInfoItem2:HookScript("OnClick", handleQuestFrameItemClick)
-	MapQuestInfoRewardsFrameQuestInfoItem3:HookScript("OnClick", handleQuestFrameItemClick)
-	MapQuestInfoRewardsFrameQuestInfoItem4:HookScript("OnClick", handleQuestFrameItemClick)
-	MapQuestInfoRewardsFrameQuestInfoItem5:HookScript("OnClick", handleQuestFrameItemClick)
-	MapQuestInfoRewardsFrameQuestInfoItem6:HookScript("OnClick", handleQuestFrameItemClick)
 end
-MapQuestInfoRewardsFrame:HookScript("OnShow", onQuestRewardsShow)
+
+local function onQuestRewardsShow()
+	setupQuestFrame("QuestInfoRewardsFrameQuestInfoItem")
+end
+
+local function onMapQuestRewardsShow()
+	setupQuestFrame("MapQuestInfoRewardsFrameQuestInfoItem")
+end
+
+MapQuestInfoRewardsFrame:HookScript("OnShow", onMapQuestRewardsShow)
+QuestInfoRewardsFrame:HookScript("OnShow", onQuestRewardsShow)
