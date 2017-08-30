@@ -158,29 +158,6 @@ end
 
 local function peddleGoods()
 	local total = 0
-	local sellCount = 0
-	local sellDelay = 0
-
-	for bagNumber = 0, 4 do
-		local bagsSlotCount = GetContainerNumSlots(bagNumber)
-		for slotNumber = 1, bagsSlotCount do
-			local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
-
-			if uniqueItemID and itemIsToBeSold(itemID, uniqueItemID) then
-				local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
-
-				if itemButton.coins then
-					itemButton.coins:Hide()
-				end
-
-				local _, amount = GetContainerItemInfo(bagNumber, slotNumber)
-
-				local _, _, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
-				if price and price > 0 then
-					price = price * amount
-
-					if total == 0 and (not Silent or not SilenceSaleSummary) then
-						print("Peddler sold:")
 					end
 
 					total = total + price
@@ -288,7 +265,7 @@ end
 local function markBagginsBags()
 	for bagid, bag in ipairs(Baggins.bagframes) do
 		for sectionid, section in ipairs(bag.sections) do
-			for buttonid, itemButton in ipairs(section.items) do
+			for buttonid, testyTest in ipairs(section.items) do
 				local itemsBagNumber = itemButton:GetParent():GetID()
 				local itemsSlotNumber = itemButton:GetID()
 
