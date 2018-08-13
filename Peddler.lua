@@ -372,7 +372,8 @@ local function markArkInventoryBags()
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
 		for slotNumber = 1, bagsSlotCount do
 			local itemButton = _G["ARKINV_Frame1ScrollContainerBag" .. bagNumber + 1 .. "Item" .. slotNumber]
-			checkItem(bagNumber, slotNumber, itemButton)
+			-- Required to check for itemButton because ArkInventory changed when it builds the item objects so only the first slot of each bag is available prior to the first time its opened, causing Peddler to get a nil obj for itemButton. /vincentSDSH
+			if itemButton then checkItem(bagNumber, slotNumber, itemButton) end
 		end
 	end
 end
@@ -384,7 +385,7 @@ local function markCargBagsNivayaBags()
 	end
 
 	-- Somehow, Nivaya can have higher slot-numbers than actual bag slots exist...
-	totalSlotCount = totalSlotCount * 2
+	totalSlotCount = totalSlotCount * 5
 
 	for slotNumber = 1, totalSlotCount do
 		local itemButton = _G["NivayaSlot" .. slotNumber]
@@ -455,10 +456,10 @@ local function markInventorianBags()
 	end
 end
 
--- Special thanks to Xodiv of Curse for this one!
+-- Special thanks to both Xodiv & Theroxis of Curse for this one.
 local function markLiteBagBags()
-	for i = 1, LiteBagInventory.size do
-		local button = LiteBagInventory.itemButtons[i]
+	for i = 1, LiteBagInventoryPanel.size do
+		local button = LiteBagInventoryPanel.itemButtons[i]
 		local itemsBagNumber = button:GetParent():GetID()
 		local itemsSlotNumber = button:GetID()
 		checkItem(itemsBagNumber, itemsSlotNumber, button)
