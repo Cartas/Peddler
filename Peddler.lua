@@ -346,7 +346,7 @@ local function markAdiBagBags()
 	end
 
 	-- For some reason, AdiBags can have way more buttons than the actual amount of bag slots... not sure how or why.
-	totalSlotCount = totalSlotCount + 60
+	totalSlotCount = totalSlotCount + 160
 
 	if totalSlotCount < 100 then
 		totalSlotCount = 100

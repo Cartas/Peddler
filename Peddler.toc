@@ -1,7 +1,7 @@
-## Interface: 80000
+## Interface: 11302
 ## Title: Peddler
 ## Notes: Automatically sells previously designated items!
-## Author: Cartas @ GrimBatol
+## Author: Cartas @ Bloodfang-Classic
 ## SavedVariables: ModifierKey, SellLimit, Silent, SilenceSaleSummary, IconPlacement
 ## SavedVariablesPerCharacter: ItemsToSell, UnmarkedItems, AutoSellGreyItems, AutoSellWhiteItems, AutoSellGreenItems, AutoSellBlueItems, AutoSellPurpleItems, AutoSellUnwantedItems, SoulboundOnly
 
