@@ -1,7 +1,7 @@
-local _, ns = ...
+local _, Peddler = ...
 
 local ARMOUR = "Armor"
-ns.ARMOUR = ARMOUR
+Peddler.ARMOUR = ARMOUR
 
 local PLATE = "Plate"
 local MAIL = "Mail"
@@ -18,7 +18,7 @@ local MISC = "Miscellaneous"
 
 
 local WEAPON = "Weapon"
-ns.WEAPON = WEAPON
+Peddler.WEAPON = WEAPON
 
 local ONE_HANDED_AXE = "One-Handed Axes"
 local TWO_HANDED_AXE = "Two-Handed Axes"
@@ -43,7 +43,7 @@ local WAND = "Wands"
 
 local FISHING_POLE = "Fishing Poles"
 
-ns.WANTED_ITEMS = {
+Peddler.WANTED_ITEMS = {
 	['DEATHKNIGHT'] = {
 		[ARMOUR] = {PLATE, SIGIL, MISC},
 		[WEAPON] = {ONE_HANDED_AXE, TWO_HANDED_AXE, ONE_HANDED_MACE, TWO_HANDED_MACE, ONE_HANDED_SWORD, TWO_HANDED_SWORD, POLEARM, FISHING_POLE}
