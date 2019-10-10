@@ -1,4 +1,4 @@
-local _, ns = ...
+local _, Peddler = ...
 
 -- Assign global functions to locals for optimisation.
 local GetContainerNumSlots = GetContainerNumSlots
@@ -16,9 +16,9 @@ local UnitClass = UnitClass
 local next = next
 local Baggins = Baggins
 
-local ARMOUR = ns.ARMOUR
-local WEAPON = ns.WEAPON
-local WANTED_ITEMS = ns.WANTED_ITEMS
+local ARMOUR = Peddler.ARMOUR
+local WEAPON = Peddler.WEAPON
+local WANTED_ITEMS = Peddler.WANTED_ITEMS
 
 local BUYBACK_COUNT = 12
 local _, PLAYERS_CLASS = UnitClass('player')
@@ -126,7 +126,7 @@ local function isUnwantedItem(itemType, subType, equipSlot)
 	return unwantedItem
 end
 
-local function itemIsToBeSold(itemID, uniqueItemID)
+function Peddler.itemIsToBeSold(itemID, uniqueItemID)
 	local _, link, quality, itemLevel, _, itemType, subType, _, equipSlot, _, price = GetItemInfo(itemID)
 
 	-- No price?  No sale!
@@ -166,7 +166,7 @@ local function peddleGoods()
 		for slotNumber = 1, bagsSlotCount do
 			local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
 
-			if uniqueItemID and itemIsToBeSold(itemID, uniqueItemID) then
+			if uniqueItemID and Peddler.itemIsToBeSold(itemID, uniqueItemID) then
 				local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
 
 				if itemButton.coins then
@@ -270,7 +270,7 @@ end
 
 local function displayCoins(itemID, uniqueItemID, itemButton)
 	if uniqueItemID then
-		if itemIsToBeSold(itemID, uniqueItemID) then
+		if Peddler.itemIsToBeSold(itemID, uniqueItemID) then
 			showCoinTexture(itemButton)
 		elseif itemButton.coins then
 			itemButton.coins:Hide()
@@ -548,7 +548,7 @@ local function markWares()
 	end
 end
 
-ns.markWares = markWares
+Peddler.markWares = markWares
 
 local function onUpdate()
 	markCounter = markCounter + 1

@@ -1,4 +1,4 @@
-local _, ns = ...
+local _, Peddler = ...
 
 local frame = CreateFrame("Frame", nil, InterfaceOptionsFramePanelContainer)
 frame.name = "Peddler"
@@ -112,43 +112,43 @@ function frame:CreateOptions()
 	autoSellSoulboundOnly:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 120, -205)
 	autoSellSoulboundOnly:SetScript("PostClick", function(self, button, down)
 		SoulboundOnly = self:GetChecked()
-		ns.markWares()
+		Peddler.markWares()
 	end)
 
 	local autoSellGreyItems = createCheckBox(self, title, 9, AutoSellGreyItems, "Poor Items", "Automatically sells all grey/junk items.")
 	autoSellGreyItems:SetScript("PostClick", function(self, button, down)
 		AutoSellGreyItems = self:GetChecked()
-		ns.markWares()
+		Peddler.markWares()
 	end)
 
 	local autoSellWhiteItems = createCheckBox(self, title, 10, AutoSellWhiteItems, "Common Items", "Automatically sells all white/common items.")
 	autoSellWhiteItems:SetScript("PostClick", function(self, button, down)
 		AutoSellWhiteItems = self:GetChecked()
-		ns.markWares()
+		Peddler.markWares()
 	end)
 
 	local autoSellGreenItems = createCheckBox(self, title, 11, AutoSellGreenItems, "Uncommon Items", "Automatically sells all green/uncommon items.")
 	autoSellGreenItems:SetScript("PostClick", function(self, button, down)
 		AutoSellGreenItems = self:GetChecked()
-		ns.markWares()
+		Peddler.markWares()
 	end)
 
 	local autoSellBlueItems = createCheckBox(self, title, 12, AutoSellBlueItems, "Rare Items", "Automatically sells all blue/rare items.")
 	autoSellBlueItems:SetScript("PostClick", function(self, button, down)
 		AutoSellBlueItems = self:GetChecked()
-		ns.markWares()
+		Peddler.markWares()
 	end)
 
 	local autoSellPurpleItems = createCheckBox(self, title, 13, AutoSellPurpleItems, "Epic Items", "Automatically sells all purple/epic items.")
 	autoSellPurpleItems:SetScript("PostClick", function(self, button, down)
 		AutoSellPurpleItems = self:GetChecked()
-		ns.markWares()
+		Peddler.markWares()
 	end)
 
 	local autoSellUnwantedItems = createCheckBox(self, title, 14, AutoSellUnwantedItems, "Unwanted Items", "Automatically sell all items which are unwanted for your current class (e.g. Priests don't want plate gear, so all plate gear will be marked).")
 	autoSellUnwantedItems:SetScript("PostClick", function(self, button, down)
 		AutoSellUnwantedItems = self:GetChecked()
-		ns.markWares()
+		Peddler.markWares()
 	end)
 
 	local clearWaresList = CreateFrame("Button", nil, self, "UIPanelButtonTemplate")
@@ -157,7 +157,7 @@ function frame:CreateOptions()
 	clearWaresList:SetText("Clear Items List")
 	clearWaresList:SetScript("PostClick", function(self, button, down)
 		ItemsToSell = {}
-		ns.markWares()
+		Peddler.markWares()
 	end)
 
 	local clearWaresLabel = self:CreateFontString(nil, nil, "GameFontHighlightSmall")
