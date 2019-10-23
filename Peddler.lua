@@ -103,7 +103,7 @@ local function parseItemString(itemString)
 	return itemID, uniqueItemID
 end
 
-local function getUniqueItemID(bagNumber, slotNumber)
+function Peddler.getUniqueItemID(bagNumber, slotNumber)
 	local itemString = GetContainerItemLink(bagNumber, slotNumber)
 	return parseItemString(itemString)
 end
@@ -164,7 +164,7 @@ local function peddleGoods()
 	for bagNumber = 0, 4 do
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
 		for slotNumber = 1, bagsSlotCount do
-			local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
+			local itemID, uniqueItemID = Peddler.getUniqueItemID(bagNumber, slotNumber)
 
 			if uniqueItemID and Peddler.itemIsToBeSold(itemID, uniqueItemID) then
 				local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
@@ -281,7 +281,7 @@ local function displayCoins(itemID, uniqueItemID, itemButton)
 end
 
 local function checkItem(bagNumber, slotNumber, itemButton)
-	local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
+	local itemID, uniqueItemID = Peddler.getUniqueItemID(bagNumber, slotNumber)
 	displayCoins(itemID, uniqueItemID, itemButton)
 end
 
@@ -665,7 +665,7 @@ local function handleItemClick(self, button)
 	local bagNumber = self:GetParent():GetID()
 	local slotNumber = self:GetID()
 
-	local itemID, uniqueItemID = getUniqueItemID(bagNumber, slotNumber)
+	local itemID, uniqueItemID = Peddler.getUniqueItemID(bagNumber, slotNumber)
 
 	-- Empty bag slots cannot be sold, silly!
 	if not itemID then
@@ -740,3 +740,5 @@ end
 
 MapQuestInfoRewardsFrame:HookScript("OnShow", onMapQuestRewardsShow)
 QuestInfoRewardsFrame:HookScript("OnShow", onQuestRewardsShow)
+
+PeddlerAPI = Peddler
