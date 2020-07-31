@@ -487,6 +487,16 @@ local function markLUIBags()
 	end
 end
 
+local function markSortedItems() 
+	for bagNumber = 0, 4 do
+		local bagsSlotCount = GetContainerNumSlots(bagNumber)
+		for slotNumber = 1, bagsSlotCount do
+			local itemButton = _G["SortedSlot_Bag" .. bagNumber .. "Item" .. slotNumber .. "FavoriteButton"]
+			checkItem(bagNumber, slotNumber, itemButton)
+		end
+	end
+end
+
 -- Also works for bBag.
 local function markNormalBags()
 	for containerNumber = 0, 4 do
@@ -542,6 +552,8 @@ local function markWares()
 		markElvUIBags()
 	elseif IsAddOnLoaded("LUI") and _G["LUIBags_Item0_1"] then
 		markLUIBags()
+	elseif IsAddOnLoaded("Sorted") then
+		markSortedItems()
 	else
 		usingDefaultBags = true
 		markNormalBags()
