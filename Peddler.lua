@@ -340,19 +340,8 @@ local function markBaudBagBags()
 end
 
 local function markAdiBagBags()
-	local totalSlotCount = 0
-	for bagNumber = 0, 4 do
-		totalSlotCount = totalSlotCount + GetContainerNumSlots(bagNumber)
-	end
-
 	-- For some reason, AdiBags can have way more buttons than the actual amount of bag slots... not sure how or why.
-	totalSlotCount = totalSlotCount + 160
-
-	if totalSlotCount < 100 then
-		totalSlotCount = 100
-	end
-
-	for slotNumber = 1, totalSlotCount do
+	for slotNumber = 1, 1000 do
 		local itemButton = _G["AdiBagsItemButton" .. slotNumber]
 		if itemButton then
 			local _, bag, slot = strsplit('-', tostring(itemButton))
