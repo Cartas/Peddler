@@ -422,7 +422,8 @@ local function markElvUIBags()
 	for bagNumber = 0, 4 do
 		local bagsSlotCount = GetContainerNumSlots(bagNumber)
 		for slotNumber = 1, bagsSlotCount do
-			local itemButton = _G["ElvUI_ContainerFrameBag" .. bagNumber .. "Slot" .. slotNumber]
+			-- For some reason ElvUI is starting with the backpack as bag number -1, so we have take away 1.
+			local itemButton = _G["ElvUI_ContainerFrameBag" .. bagNumber - 1 .. "Slot" .. slotNumber]
 			checkItem(bagNumber, slotNumber, itemButton)
 		end
 	end

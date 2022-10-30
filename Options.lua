@@ -164,7 +164,7 @@ function frame:CreateOptions()
 	clearWaresLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 19, -450)
 	clearWaresLabel:SetText("Clears the list of items you've manually marked for sale, for this character.")
 
-	self:refresh()
+	if self.refresh ~=nil then self:refresh() end
 end
 
 InterfaceOptions_AddCategory(frame)
