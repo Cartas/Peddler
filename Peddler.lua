@@ -2,9 +2,8 @@ local _, Peddler = ...
 
 -- Assign global functions to locals for optimisation.
 local GetContainerNumSlots = GetContainerNumSlots
-local GetContainerItemID = GetContainerItemID
+local GetContainerItemLink = GetContainerItemLink
 local GetItemInfo = GetItemInfo
-local GetItemCount = GetItemCount
 local GetContainerItemInfo = GetContainerItemInfo
 local GetQuestLogItemLink = GetQuestLogItemLink
 local PickupContainerItem = PickupContainerItem
@@ -13,7 +12,6 @@ local IsControlKeyDown = IsControlKeyDown
 local IsShiftKeyDown = IsShiftKeyDown
 local IsAltKeyDown = IsAltKeyDown
 local UnitClass = UnitClass
-local next = next
 local Baggins = Baggins
 
 local ARMOUR = Peddler.ARMOUR
@@ -104,6 +102,8 @@ local function parseItemString(itemString)
 end
 
 function Peddler.getUniqueItemID(bagNumber, slotNumber)
+	if bagNumber == nil then return end
+
 	local itemString = GetContainerItemLink(bagNumber, slotNumber)
 	return parseItemString(itemString)
 end
@@ -127,6 +127,8 @@ local function isUnwantedItem(itemType, subType, equipSlot)
 end
 
 function Peddler.itemIsToBeSold(itemID, uniqueItemID)
+	if itemID == nil or uniqueItemID == nil then return end
+
 	local _, link, quality, itemLevel, _, itemType, subType, _, equipSlot, _, price = GetItemInfo(itemID)
 
 	-- No price?  No sale!
