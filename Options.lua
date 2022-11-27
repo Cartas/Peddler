@@ -66,7 +66,7 @@ end
 function frame:CreateOptions()
 	local title = self:CreateFontString(nil, nil, "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", 16, -16)
-	title:SetText("Peddler v5.0")
+	title:SetText("Peddler")
 
 	local sellLimit = createCheckBox(self, title, 1, SellLimit, "Sell Limit", "Limits the amount of items sold in one go, so you may buy all items back.")
 	sellLimit:SetScript("PostClick", function(self, button, down)
