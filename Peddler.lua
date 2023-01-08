@@ -82,7 +82,7 @@ local function getUniqueItemID(bagNumber, slotNumber)
   local itemID, uniqueItemID = parseItemString(itemString)
   local isSoulbound = getIsItemSoulbound(bagNumber, slotNumber)
 
-  return itemID, uniqueItemID, isSoulbound
+  return itemID, uniqueItemID, isSoulbound, itemString
 end
 
 local function isUnwantedItem(itemType, subType, equipSlot)
@@ -140,7 +140,7 @@ local function peddleGoods()
   for bagNumber = 0, BAG_COUNT do
     local bagsSlotCount = C_Container.GetContainerNumSlots(bagNumber)
     for slotNumber = 1, bagsSlotCount do
-      local itemID, uniqueItemID, isSoulbound = getUniqueItemID(bagNumber, slotNumber)
+      local itemID, uniqueItemID, isSoulbound, itemLink = getUniqueItemID(bagNumber, slotNumber)
 
       if uniqueItemID and Peddler.itemIsToBeSold(itemID, uniqueItemID, isSoulbound) then
         local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
@@ -152,7 +152,8 @@ local function peddleGoods()
         local itemInfo = C_Container.GetContainerItemInfo(bagNumber, slotNumber)
         local amount = itemInfo.stackCount
 
-        local _, _, quality, _, _, _, _, _, _, _, price = GetItemInfo(itemID)
+        local _, _, _, _, _, _, _, _, _, _, price = GetItemInfo(itemLink)
+
         if price and price > 0 then
           price = price * amount
 
@@ -163,8 +164,7 @@ local function peddleGoods()
           total = total + price
 
           if not Silent then
-            local _, link = GetItemInfo(itemID)
-            local output = "    " .. sellCount + 1 .. '. ' .. link
+            local output = "    " .. sellCount + 1 .. '. ' .. itemLink
 
             if amount > 1 then
               output = output .. "x" .. amount
