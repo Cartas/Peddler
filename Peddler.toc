@@ -1,4 +1,4 @@
-## Interface: 100002
+## Interface: 100107
 ## Title: Peddler
 ## Notes: Automatically sells previously designated items!
 ## Author: Cartas @ Bloodfang-Classic

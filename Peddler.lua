@@ -275,7 +275,23 @@ local function markBagginsBags()
   end
 end
 
--- Also works for Bagnon.
+local function markBagnonBags()
+  for slotNumber = 1, 250 do
+    local itemButton = _G["BagnonContainerItem" .. slotNumber]
+
+    if not itemButton then
+      return
+    end
+
+    local itemButtonParent = itemButton:GetParent()
+    if itemButtonParent then
+      local itemsBagNumber = itemButtonParent:GetID()
+      local itemsSlotNumber = itemButton:GetID()
+      checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+    end
+  end
+end
+
 local function markCombuctorBags()
   for bagNumber = 0, BAG_COUNT do
     for slotNumber = 1, 36 do
@@ -517,8 +533,10 @@ local overridenItemClickFunction = false
 local function markWares()
   if IsAddOnLoaded("Baggins") then
     markBagginsBags()
-  elseif IsAddOnLoaded("Combuctor") or IsAddOnLoaded("Bagnon") then
+  elseif IsAddOnLoaded("Combuctor") then
     markCombuctorBags()
+  elseif IsAddOnLoaded("Bagnon") then
+    markBagnonBags()
   elseif IsAddOnLoaded("OneBag3") then
     markOneBagBags()
   elseif IsAddOnLoaded("BaudBag") then
