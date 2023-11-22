@@ -77,14 +77,6 @@ local function parseItemString(itemString)
   return itemID, uniqueItemID
 end
 
-local function getUniqueItemID(bagNumber, slotNumber)
-  local itemString = C_Container.GetContainerItemLink(bagNumber, slotNumber)
-  local itemID, uniqueItemID = parseItemString(itemString)
-  local isSoulbound = getIsItemSoulbound(bagNumber, slotNumber)
-
-  return itemID, uniqueItemID, isSoulbound, itemString
-end
-
 local function isUnwantedItem(itemType, subType, equipSlot)
   local unwantedItem = false
 
@@ -140,7 +132,7 @@ local function peddleGoods()
   for bagNumber = 0, BAG_COUNT do
     local bagsSlotCount = C_Container.GetContainerNumSlots(bagNumber)
     for slotNumber = 1, bagsSlotCount do
-      local itemID, uniqueItemID, isSoulbound, itemLink = getUniqueItemID(bagNumber, slotNumber)
+      local itemID, uniqueItemID, isSoulbound, itemLink = Peddler.getUniqueItemID(bagNumber, slotNumber)
 
       if uniqueItemID and Peddler.itemIsToBeSold(itemID, uniqueItemID, isSoulbound) then
         local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
@@ -258,7 +250,7 @@ local function displayCoins(itemID, uniqueItemID, itemButton, isSoulbound)
 end
 
 local function checkItem(bagNumber, slotNumber, itemButton)
-  local itemID, uniqueItemID, isSoulbound = getUniqueItemID(bagNumber, slotNumber)
+  local itemID, uniqueItemID, isSoulbound = Peddler.getUniqueItemID(bagNumber, slotNumber)
   displayCoins(itemID, uniqueItemID, itemButton, isSoulbound)
 end
 
@@ -778,3 +770,5 @@ end
 
 MapQuestInfoRewardsFrame:HookScript("OnShow", onMapQuestRewardsShow)
 QuestInfoRewardsFrame:HookScript("OnShow", onQuestRewardsShow)
+
+PeddlerAPI = Peddler
