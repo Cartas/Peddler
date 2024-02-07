@@ -438,13 +438,15 @@ local function markInventorianBags()
   end
 end
 
--- Special thanks to both Xodiv & Theroxis of Curse for this one.
 local function markLiteBagBags()
-  for i = 1, LiteBagInventoryPanel.size do
-    local button = LiteBagInventoryPanel.itemButtons[i]
-    local itemsBagNumber = button:GetParent():GetID()
-    local itemsSlotNumber = button:GetID()
-    checkItem(itemsBagNumber, itemsSlotNumber, button)
+  for bagNumber = 0, BAG_COUNT do
+    local bagsSlotCount = C_Container.GetContainerNumSlots(bagNumber)
+    for slotNumber = 1, bagsSlotCount do
+      local itemButton = _G["LiteBagBackpackPanelBag" .. bagNumber + 1 .. "Item" .. slotNumber]
+      if itemButton then
+        checkItem(bagNumber, slotNumber, itemButton)
+      end
+    end
   end
 end
 
