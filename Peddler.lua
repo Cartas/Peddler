@@ -496,6 +496,18 @@ local function markRealUIBags()
   end
 end
 
+local function markBetterBagsBags()
+  for slotNumber = 0, 600 do
+    local itemButton = _G["BetterBagsItemButton" .. slotNumber]
+    if itemButton then
+      local itemsBagNumber = itemButton:GetParent():GetID()
+      local itemsSlotNumber = itemButton:GetID()
+      checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+    end
+    slotNumber = slotNumber + 1
+  end
+end
+
 -- Also works for bBag.
 local function markNormalBags()
   for containerNumber = 0, BAG_COUNT do
@@ -566,6 +578,8 @@ local function markWares()
     markLUIBags()
   elseif IsAddOnLoaded("RealUI_Inventory") then
     markRealUIBags()
+  elseif IsAddOnLoaded("BetterBags") then
+    markBetterBagsBags()
   else
     usingDefaultBags = true
     markNormalBags()
@@ -713,6 +727,7 @@ end
 hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", handleItemClick)
 
 -- Quest Reward handling.
+--[[ 
 local listeningToRewards = {}
 local function checkQuestReward(itemButton, toggle)
   local rewardIndex = itemButton:GetID()
@@ -769,6 +784,7 @@ local function onMapQuestRewardsShow()
 end
 
 MapQuestInfoRewardsFrame:HookScript("OnShow", onMapQuestRewardsShow)
-QuestInfoRewardsFrame:HookScript("OnShow", onQuestRewardsShow)
+QuestInfoRewardsFrame:HookScript("OnShow", onQuestRewardsShow) 
+]]
 
 PeddlerAPI = Peddler

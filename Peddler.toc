@@ -1,4 +1,4 @@
-## Interface: 11500
+## Interface: 11501
 ## Title: Peddler
 ## Notes: Automatically sells previously designated items!
 ## Author: Cartas @ Stitches-HC
