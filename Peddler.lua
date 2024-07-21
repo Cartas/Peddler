@@ -236,8 +236,8 @@ local function showCoinTexture(itemButton)
   end
   markCounter = 0
 
-  if usingDefaultBags or IsAddOnLoaded("Baggins") or IsAddOnLoaded("AdiBags") then
-    -- Baggins/AdiBag update slower than the others, so we have to account for that.
+  if usingDefaultBags or IsAddOnLoaded("Baggins") or IsAddOnLoaded("AdiBags") or IsAddOnLoaded("BetterBags") then
+    -- These update slower than the others, so we have to account for that.
     -- Default WoW bags need to constantly be updating, due to opening of individual bags.
     countLimit = 30
   else
@@ -328,6 +328,21 @@ local function markBaudBagBags()
     for slotNumber = 1, bagsSlotCount do
       local itemButton = _G["BaudBagSubBag" .. bagNumber .. "Item" .. slotNumber]
       checkItem(bagNumber, slotNumber, itemButton)
+    end
+  end
+end
+
+local function markBetterBags()
+  -- For some reason, BetterBags can have way more buttons than the actual amount of bag slots... not sure how or why.
+  for slotNumber = 1, 1000 do
+    local itemButton = _G["BetterBagsItemButton" .. slotNumber]
+    if itemButton then
+      local itemButtonParent = itemButton:GetParent()
+      if itemButtonParent then
+        local itemsBagNumber = itemButtonParent:GetID()
+        local itemsSlotNumber = itemButton:GetID()
+        checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+      end
     end
   end
 end
@@ -545,6 +560,8 @@ local function markWares()
     markBaudBagBags()
   elseif IsAddOnLoaded("AdiBags") then
     markAdiBagBags()
+  elseif IsAddOnLoaded("BetterBags") then
+    markBetterBags()
   elseif IsAddOnLoaded("ArkInventory") then
     markArkInventoryBags()
   elseif IsAddOnLoaded("famBags") then
