@@ -1,6 +1,7 @@
 local _, Peddler = ...
 
 local frame = CreateFrame("Frame", nil, InterfaceOptionsFramePanelContainer)
+local category, layout = Settings.RegisterCanvasLayoutCategory(frame, "Peddler");
 frame.name = "Peddler"
 frame:Hide()
 
@@ -167,10 +168,10 @@ function frame:CreateOptions()
 	if self.refresh ~=nil then self:refresh() end
 end
 
-InterfaceOptions_AddCategory(frame)
+Settings.RegisterAddOnCategory(category)
 
 -- Handling Peddler's options.
 SLASH_PEDDLER_COMMAND1 = '/peddler'
 SlashCmdList['PEDDLER_COMMAND'] = function(command)
-	InterfaceOptionsFrame_OpenToCategory('Peddler')
+	Settings.OpenToCategory('Peddler')
 end
