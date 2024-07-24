@@ -145,7 +145,7 @@ local function peddleGoods()
       if uniqueItemID and Peddler.itemIsToBeSold(itemID, uniqueItemID, isSoulbound) then
         local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
 
-        if itemButton.coins then
+        if itemButton and itemButton.coins then
           itemButton.coins:Hide()
         end
 
@@ -511,6 +511,7 @@ local function markRealUIBags()
 end
 
 -- Also works for bBag.
+-- TODO: Normal bags are broken with the War Within pre-patch...
 local function markNormalBags()
   for containerNumber = 0, BAG_COUNT do
     local container = _G["ContainerFrame" .. containerNumber + 1]
@@ -583,8 +584,11 @@ local function markWares()
   elseif IsAddOnLoaded("RealUI_Inventory") then
     markRealUIBags()
   else
+    if not usingDefaultBags then
+      print("Peddler currently doesn't support showing coins on items in Blizzard's default bags since The War Within pre-patch - sorry!")
+    end
     usingDefaultBags = true
-    markNormalBags()
+    --markNormalBags()
   end
 end
 
