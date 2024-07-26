@@ -143,12 +143,6 @@ local function peddleGoods()
       local itemID, uniqueItemID, isSoulbound, itemLink = getUniqueItemID(bagNumber, slotNumber)
 
       if uniqueItemID and Peddler.itemIsToBeSold(itemID, uniqueItemID, isSoulbound) then
-        local itemButton = _G["ContainerFrame" .. bagNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
-
-        if itemButton and itemButton.coins then
-          itemButton.coins:Hide()
-        end
-
         local itemInfo = C_Container.GetContainerItemInfo(bagNumber, slotNumber)
         local amount = itemInfo.stackCount
 
@@ -510,7 +504,6 @@ local function markRealUIBags()
   end
 end
 
--- Also works for bBag.
 local function markNormalBags()
   local combinedBags = _G["ContainerFrameCombinedBags"]
   if (combinedBags:IsShown()) then
