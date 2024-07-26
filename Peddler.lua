@@ -511,35 +511,19 @@ local function markRealUIBags()
 end
 
 -- Also works for bBag.
--- TODO: Normal bags are broken with the War Within pre-patch...
 local function markNormalBags()
-  for containerNumber = 0, BAG_COUNT do
-    local container = _G["ContainerFrame" .. containerNumber + 1]
-    local combinedBags = _G["ContainerFrameCombinedBags"]
-    if (container:IsShown()) then
-      local bagsSlotCount = C_Container.GetContainerNumSlots(containerNumber)
-      for slotNumber = 1, bagsSlotCount do
-        -- It appears there are two ways of finding items!
-        --   Accessing via _G means that bagNumbers are 1-based indices and
-        --   slot numbers start from the bottom-right rather than top-left!
-        -- Additionally, as only a couple of the bags may be visible at any
-        --   given time, we may be looking at items whose buttons don't
-        --   currently exist, and mark the wrong ones, so get the actual
-        --   bag & slot number from the itemButton.
-        local itemButton = _G["ContainerFrame" .. containerNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
-
-        local bagNumber = itemButton:GetParent():GetID()
-        local actualSlotNumber = itemButton:GetID()
-
+  local combinedBags = _G["ContainerFrameCombinedBags"]
+  if (combinedBags:IsShown()) then
+    for i, itemButton in ipairs(combinedBags.Items) do
+      local actualSlotNumber, containerNumber = itemButton:GetSlotAndBagID()
+      checkItem(containerNumber, actualSlotNumber, itemButton)
+    end
+  else
+    local frameContainer = _G["ContainerFrameContainer"]
+    for i, bag in ipairs(frameContainer.ContainerFrames) do
+      for j, itemButton in ipairs(bag.Items) do
+        local actualSlotNumber, bagNumber = itemButton:GetSlotAndBagID()
         checkItem(bagNumber, actualSlotNumber, itemButton)
-      end
-    elseif (combinedBags:IsShown()) then
-      local bagsSlotCount = C_Container.GetContainerNumSlots(containerNumber)
-      for slotNumber = 1, bagsSlotCount do
-        local itemButton = _G["ContainerFrame" .. containerNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
-        local actualSlotNumber = itemButton:GetID()
-
-        checkItem(containerNumber, actualSlotNumber, itemButton)
       end
     end
   end
@@ -584,11 +568,8 @@ local function markWares()
   elseif IsAddOnLoaded("RealUI_Inventory") then
     markRealUIBags()
   else
-    if not usingDefaultBags then
-      print("Peddler currently doesn't support showing coins on items in Blizzard's default bags since The War Within pre-patch - sorry!")
-    end
     usingDefaultBags = true
-    --markNormalBags()
+    markNormalBags()
   end
 end
 
