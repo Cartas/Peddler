@@ -515,20 +515,16 @@ local function markNormalBags()
   local combinedBags = _G["ContainerFrameCombinedBags"]
   if (combinedBags:IsShown()) then
     for i, itemButton in ipairs(combinedBags.Items) do
-      local bagNumber = itemButton:GetParent():GetID()
-      local actualSlotNumber = itemButton:GetID()
-
-      checkItem(bagNumber, actualSlotNumber, itemButton)
+      local actualSlotNumber, containerNumber = itemButton:GetSlotAndBagID()
+      checkItem(containerNumber, actualSlotNumber, itemButton)
     end
   else
     local frameContainer = _G["ContainerFrameContainer"]
     for i, bag in ipairs(frameContainer.ContainerFrames) do
-        for j, itemButton in ipairs(bag.Items) do
-           local containerNumber = itemButton:GetParent():GetID()
-           local actualSlotNumber = itemButton:GetID()
-
-           checkItem(containerNumber, actualSlotNumber, itemButton)
-        end
+      for j, itemButton in ipairs(bag.Items) do
+        local actualSlotNumber, bagNumber = itemButton:GetSlotAndBagID()
+        checkItem(bagNumber, actualSlotNumber, itemButton)
+      end
     end
   end
 end
