@@ -505,21 +505,16 @@ local function markRealUIBags()
 end
 
 local function markBaganatorBags()
-  local combinedBags = _G["Baganator_SingleViewBackpackViewFrame"]
-  if (combinedBags:IsShown()) then
-    for i, itemButton in ipairs(combinedBags.BagLive.buttons) do
-      local actualSlotNumber, containerNumber = itemButton:GetSlotAndBagID()
-      checkItem(containerNumber, actualSlotNumber, itemButton)
-    end
-  else
-    local frameContainer = _G["Baganator_CategoryViewBackpackViewFrame"]
-    for i, layout in ipairs(frameContainer.Layouts) do
+  local singleView = _G["Baganator_SingleViewBackpackViewFrame"]
+  local categoryView = _G["Baganator_CategoryViewBackpackViewFrame"]
+
+  local bags = singleView:IsShown() and singleView or categoryView
+    for i, layout in ipairs(bags.Layouts) do
       for j, itemButton in ipairs(layout.buttons) do
-        local actualSlotNumber, containerNumber = itemButton:GetSlotAndBagID()
-        checkItem(containerNumber, actualSlotNumber, itemButton)
+        local slotNumber, containerNumber = itemButton:GetSlotAndBagID()
+        checkItem(containerNumber, slotNumber, itemButton)
       end
     end
-  end
 end
 
 local function markNormalBags()
