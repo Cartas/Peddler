@@ -5,6 +5,7 @@ local C_Container = C_Container
 local GetItemInfo = GetItemInfo
 local GetQuestLogItemLink = GetQuestLogItemLink
 local PickupMerchantItem = PickupMerchantItem
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local IsControlKeyDown = IsControlKeyDown
 local IsShiftKeyDown = IsShiftKeyDown
 local IsAltKeyDown = IsAltKeyDown
