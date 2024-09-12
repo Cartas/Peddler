@@ -510,7 +510,7 @@ local function markBaganatorBags()
   local categoryView = _G["Baganator_CategoryViewBackpackViewFrame"]
 
   local bags = singleView:IsShown() and singleView or categoryView
-    for i, layout in ipairs(bags.Layouts) do
+    for i, layout in ipairs(bags.Container.Layouts) do
       for j, itemButton in ipairs(layout.buttons) do
         local slotNumber, containerNumber = itemButton:GetSlotAndBagID()
         checkItem(containerNumber, slotNumber, itemButton)
