@@ -228,7 +228,7 @@ local function showCoinTexture(itemButton)
   end
   markCounter = 0
 
-  if usingDefaultBags or IsAddOnLoaded("Baggins") or IsAddOnLoaded("AdiBags") then
+  if usingDefaultBags or IsAddOnLoaded("Baggins") or IsAddOnLoaded("AdiBags") or IsAddOnLoaded("BetterBags") then
     -- Baggins/AdiBag update slower than the others, so we have to account for that.
     -- Default WoW bags need to constantly be updating, due to opening of individual bags.
     countLimit = 30
@@ -320,6 +320,21 @@ local function markBaudBagBags()
     for slotNumber = 1, bagsSlotCount do
       local itemButton = _G["BaudBagSubBag" .. bagNumber .. "Item" .. slotNumber]
       checkItem(bagNumber, slotNumber, itemButton)
+    end
+  end
+end
+
+local function markBetterBags()
+  -- For some reason, BetterBags can have way more buttons than the actual amount of bag slots... not sure how or why.
+  for slotNumber = 1, 1000 do
+    local itemButton = _G["BetterBagsItemButton" .. slotNumber]
+    if itemButton then
+      local itemButtonParent = itemButton:GetParent()
+      if itemButtonParent then
+        local itemsBagNumber = itemButtonParent:GetID()
+        local itemsSlotNumber = itemButton:GetID()
+        checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
+      end
     end
   end
 end
@@ -496,18 +511,6 @@ local function markRealUIBags()
   end
 end
 
-local function markBetterBagsBags()
-  for slotNumber = 0, 600 do
-    local itemButton = _G["BetterBagsItemButton" .. slotNumber]
-    if itemButton then
-      local itemsBagNumber = itemButton:GetParent():GetID()
-      local itemsSlotNumber = itemButton:GetID()
-      checkItem(itemsBagNumber, itemsSlotNumber, itemButton)
-    end
-    slotNumber = slotNumber + 1
-  end
-end
-
 -- Also works for bBag.
 local function markNormalBags()
   for containerNumber = 0, BAG_COUNT do
@@ -579,7 +582,7 @@ local function markWares()
   elseif IsAddOnLoaded("RealUI_Inventory") then
     markRealUIBags()
   elseif IsAddOnLoaded("BetterBags") then
-    markBetterBagsBags()
+    markBetterBags()
   else
     usingDefaultBags = true
     markNormalBags()
@@ -652,9 +655,7 @@ local function handleEvent(self, event, addonName)
   elseif event == "PLAYER_ENTERING_WORLD" then
     peddler:RegisterEvent("BAG_UPDATE")
   elseif event == "BAG_UPDATE" then
-    if markCounter == 0 then
-      peddler:SetScript("OnUpdate", onUpdate)
-    end
+    C_Timer.After(1, markWares)
   elseif event == "MERCHANT_SHOW" then
     peddleGoods()
   end
