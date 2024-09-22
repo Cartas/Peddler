@@ -650,9 +650,7 @@ local function handleEvent(self, event, addonName)
   elseif event == "PLAYER_ENTERING_WORLD" then
     peddler:RegisterEvent("BAG_UPDATE")
   elseif event == "BAG_UPDATE" then
-    if markCounter == 0 then
-      peddler:SetScript("OnUpdate", onUpdate)
-    end
+    C_Timer.After(1, markWares)
   elseif event == "MERCHANT_SHOW" then
     peddleGoods()
   end
