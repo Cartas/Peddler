@@ -517,18 +517,17 @@ local function markNormalBags()
     local container = _G["ContainerFrame" .. containerNumber + 1]
     local combinedBags = _G["ContainerFrameCombinedBags"]
     if (container:IsShown()) then
-      local bagsSlotCount = C_Container.GetContainerNumSlots(containerNumber)
+      -- It appears there are two ways of finding items!
+      --   Accessing via _G means that bagNumbers are 1-based indices and
+      --   slot numbers start from the bottom-right rather than top-left!
+      -- Additionally, as only a couple of the bags may be visible at any
+      --   given time, we may be looking at items whose buttons don't
+      --   currently exist, and mark the wrong ones, so get the actual
+      --   bag & slot number from the container frame & item button.
+      local bagNumber = container:GetID()
+      local bagsSlotCount = C_Container.GetContainerNumSlots(bagNumber)
       for slotNumber = 1, bagsSlotCount do
-        -- It appears there are two ways of finding items!
-        --   Accessing via _G means that bagNumbers are 1-based indices and
-        --   slot numbers start from the bottom-right rather than top-left!
-        -- Additionally, as only a couple of the bags may be visible at any
-        --   given time, we may be looking at items whose buttons don't
-        --   currently exist, and mark the wrong ones, so get the actual
-        --   bag & slot number from the itemButton.
         local itemButton = _G["ContainerFrame" .. containerNumber + 1 .. "Item" .. bagsSlotCount - slotNumber + 1]
-
-        local bagNumber = itemButton:GetParent():GetID()
         local actualSlotNumber = itemButton:GetID()
 
         checkItem(bagNumber, actualSlotNumber, itemButton)
