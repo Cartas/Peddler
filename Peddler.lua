@@ -61,7 +61,8 @@ local function parseItemString(itemString)
     return
   end
 
-  local _, itemID, _, _, _, _, _, suffixID = strsplit(":", itemString)
+  local _, itemLink = LinkUtil.ExtractLink(itemString)
+  local itemID, _, _, _, _, _, suffixID = strsplit(":", itemLink)
   itemID = tonumber(itemID)
   suffixID = tonumber(suffixID)
 
