@@ -62,7 +62,8 @@ local function parseItemString(itemString)
     return
   end
 
-  local _, itemID, _, _, _, _, _, suffixID = strsplit(":", itemString)
+  local _, _, itemID, _, _, _, _, suffixID = strsplit(":", itemString)
+
   itemID = tonumber(itemID)
   suffixID = tonumber(suffixID)
 
@@ -329,7 +330,7 @@ end
 
 local function markBetterBags()
   -- For some reason, BetterBags can have way more buttons than the actual amount of bag slots... not sure how or why.
-  for slotNumber = 1, 1000 do
+  for slotNumber = 1, 2000 do
     local itemButton = _G["BetterBagsItemButton" .. slotNumber]
     if itemButton then
       local itemButtonParent = itemButton:GetParent()
@@ -624,14 +625,12 @@ local function setupDefaults()
 end
 
 local function overrideItemClickFunction()
-  _HandleModifiedItemClick = HandleModifiedItemClick
-  HandleModifiedItemClick = function(link, item) 
-    _HandleModifiedItemClick(link, item)
-
+  -- Nice 'n' clean thanks to Aur0r4.
+  hooksecurefunc("HandleModifiedItemClick", function(link, item)
     if item then
       handlePeddlerItemClick(link, item)
     end
-  end
+  end)
 end
 
 local function handleEvent(self, event, addonName)
