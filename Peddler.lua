@@ -2,7 +2,7 @@ local _, Peddler = ...
 
 -- Assign global functions to locals for optimisation.
 local C_Container = C_Container
-local GetItemInfo = GetItemInfo
+local GetItemInfo = C_Item.GetItemInfo
 local GetQuestLogItemLink = GetQuestLogItemLink
 local PickupMerchantItem = PickupMerchantItem
 local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
