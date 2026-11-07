@@ -2,7 +2,7 @@ local _, Peddler = ...
 
 -- Assign global functions to locals for optimisation.
 local C_Container = C_Container
-local GetItemInfo = GetItemInfo
+local GetItemInfo = C_Item.GetItemInfo
 local GetQuestLogItemLink = GetQuestLogItemLink
 local PickupMerchantItem = PickupMerchantItem
 local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
@@ -507,8 +507,8 @@ local function markRealUIBags()
 end
 
 local function markBaganatorBags()
-  local singleView = _G["Baganator_SingleViewBackpackViewFrame"]
-  local categoryView = _G["Baganator_CategoryViewBackpackViewFrame"]
+  local singleView = _G["Baganator_SingleViewBackpackViewFrameblizzard"]
+  local categoryView = _G["Baganator_CategoryViewBackpackViewFrameblizzard"]
 
   local bags = singleView:IsShown() and singleView or categoryView
     for i, layout in ipairs(bags.Container.Layouts) do
