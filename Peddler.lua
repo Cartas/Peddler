@@ -516,8 +516,6 @@ local function markBaganatorBags()
     local singleView = _G["Baganator_SingleViewBackpackViewFrame" .. theme]
     local categoryView = _G["Baganator_CategoryViewBackpackViewFrame" .. theme]
 
-    print(theme)
-
     if singleView or categoryView then
       bags = singleView and singleView:IsShown() and singleView
           or categoryView
