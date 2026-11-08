@@ -171,7 +171,9 @@ end
 Settings.RegisterAddOnCategory(category)
 
 -- Handling Peddler's options.
+Peddler.category = category
+
 SLASH_PEDDLER_COMMAND1 = '/peddler'
-SlashCmdList['PEDDLER_COMMAND'] = function(command)
-	Settings.OpenToCategory('Peddler')
+SlashCmdList['PEDDLER_COMMAND'] = function()
+    Settings.OpenToCategory(Peddler.category:GetID())
 end
