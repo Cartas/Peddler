@@ -167,10 +167,22 @@ function frame:CreateOptions()
 	if self.refresh ~=nil then self:refresh() end
 end
 
-InterfaceOptions_AddCategory(frame)
+-- The Interface Options API was replaced by the Settings API in modern WoW.
+-- Retain the old registration path for clients that do not provide Settings.
+local settingsCategory
+if Settings and Settings.RegisterCanvasLayoutCategory then
+	settingsCategory = Settings.RegisterCanvasLayoutCategory(frame, frame.name)
+	Settings.RegisterAddOnCategory(settingsCategory)
+else
+	InterfaceOptions_AddCategory(frame)
+end
 
 -- Handling Peddler's options.
 SLASH_PEDDLER_COMMAND1 = '/peddler'
 SlashCmdList['PEDDLER_COMMAND'] = function(command)
-	InterfaceOptionsFrame_OpenToCategory('Peddler')
+	if settingsCategory then
+		Settings.OpenToCategory(settingsCategory:GetID())
+	else
+		InterfaceOptionsFrame_OpenToCategory(frame)
+	end
 end

@@ -10,6 +10,9 @@ local IsShiftKeyDown = IsShiftKeyDown
 local IsAltKeyDown = IsAltKeyDown
 local UnitClass = UnitClass
 local Baggins = Baggins
+-- IsAddOnLoaded moved to the C_AddOns namespace in modern WoW clients.
+-- Keep the legacy fallback so the addon remains usable on older clients too.
+local IsAddOnLoaded = (C_AddOns and C_AddOns.IsAddOnLoaded) or _G.IsAddOnLoaded
 
 local ARMOUR = Peddler.ARMOUR
 local WEAPON = Peddler.WEAPON
