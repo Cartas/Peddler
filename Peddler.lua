@@ -507,28 +507,30 @@ local function markRealUIBags()
 end
 
 local function markBaganatorBags()
-  -- Changes name depending on theme...
-  local themes = ["blizzard", "blizzard_black", "dark"]
+  -- Different themes mean different frame names...
+  local themes = { "blizzard", "blizzard_black", "dark", "ellesmereui"}
 
-  local singleView
-  local categoryView
+  local bags
 
-  for theme in themes
-    singleView = _G["Baganator_SingleViewBackpackViewFrame" .. theme]
-    categoryView = _G["Baganator_CategoryViewBackpackViewFrame" .. theme]
+  for _, theme in ipairs(themes) do
+    local singleView = _G["Baganator_SingleViewBackpackViewFrame" .. theme]
+    local categoryView = _G["Baganator_CategoryViewBackpackViewFrame" .. theme]
 
-    if singleView or categoryView
-	    -- Leave loop here
+    if singleView or categoryView then
+      bags = singleView and singleView:IsShown() and singleView
+          or categoryView
+      break
     end
   end
 
-  local bags = singleView:IsShown() and singleView or categoryView
-    for i, layout in ipairs(bags.Container.Layouts) do
-      for j, itemButton in ipairs(layout.buttons) do
-        local slotNumber, containerNumber = itemButton:GetSlotAndBagID()
-        checkItem(containerNumber, slotNumber, itemButton)
-      end
+  if not bags then return end
+
+  for _, layout in ipairs(bags.Container.Layouts) do
+    for _, itemButton in ipairs(layout.buttons) do
+      local slotNumber, containerNumber = itemButton:GetSlotAndBagID()
+      checkItem(containerNumber, slotNumber, itemButton)
     end
+  end
 end
 
 local function markNormalBags()
