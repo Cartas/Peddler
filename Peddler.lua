@@ -507,8 +507,20 @@ local function markRealUIBags()
 end
 
 local function markBaganatorBags()
-  local singleView = _G["Baganator_SingleViewBackpackViewFrameblizzard"]
-  local categoryView = _G["Baganator_CategoryViewBackpackViewFrameblizzard"]
+  -- Changes name depending on theme...
+  local themes = ["blizzard", "blizzard_black", "dark"]
+
+  local singleView
+  local categoryView
+
+  for theme in themes
+    singleView = _G["Baganator_SingleViewBackpackViewFrame" .. theme]
+    categoryView = _G["Baganator_CategoryViewBackpackViewFrame" .. theme]
+
+    if singleView or categoryView
+	    -- Leave loop here
+    end
+  end
 
   local bags = singleView:IsShown() and singleView or categoryView
     for i, layout in ipairs(bags.Container.Layouts) do
