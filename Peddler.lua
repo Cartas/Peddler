@@ -528,8 +528,59 @@ local function markBaganatorBags()
   for _, layout in ipairs(bags.Container.Layouts) do
     for _, itemButton in ipairs(layout.buttons) do
       local slotNumber, containerNumber = itemButton:GetSlotAndBagID()
-      checkItem(containerNumber, slotNumber, itemButton)
+        -- Can invalid numbers be passed in here...?
+        if type(containerNumber) == "number" and type(slotNumber) == "number" then
+      	  checkItem(containerNumber, slotNumber, itemButton)
+        end
     end
+  end
+end
+
+local euiCoins = setmetatable({}, { __mode = "k" })
+local euiRegistered = false
+
+local function paintEllesmereUIItem(btn, data)
+  local coin = euiCoins[btn]
+
+  local shouldShow = false
+  if data and data.info and data.itemLink and data.bag and data.slot
+      and data.bag >= 0 and data.bag <= BAG_COUNT and data.slot > 0 then
+    local itemID, uniqueItemID = parseItemString(data.itemLink)
+    if uniqueItemID then
+      shouldShow = Peddler.itemIsToBeSold(itemID, uniqueItemID, data.info.isBound) and true or false
+    end
+  end
+
+  if not shouldShow then
+    if coin then coin:Hide() end
+    return
+  end
+
+  if not coin then
+    local host = btn._textOverlay or btn
+    coin = host:CreateTexture(nil, "OVERLAY", nil, 7)
+    coin:SetTexture("Interface\\AddOns\\Peddler\\coins")
+    euiCoins[btn] = coin
+  end
+
+  local paddingX, paddingY = -3, 1
+  if string.find(IconPlacement, "TOP") then paddingY = -3 end
+  if string.find(IconPlacement, "LEFT") then paddingX = 1 end
+  coin:ClearAllPoints()
+  coin:SetPoint(IconPlacement, btn._textOverlay or btn, IconPlacement, paddingX, paddingY)
+  coin:Show()
+end
+
+local function markEllesmereUIBags()
+  if not euiRegistered then
+    euiRegistered = true
+    EUI_Bags.RegisterItemOverlayIcon("Peddler", paintEllesmereUIItem)
+    -- EllesmereUI repaints on bag changes itself; no polling needed.
+    peddler:SetScript("OnUpdate", nil)
+  end
+  -- Explicit repaint (item toggled, options changed).
+  if Peddler.forceRefresh and EUI_Bags:IsVisible() then
+    EUI_Bags:RefreshInventory()
   end
 end
 
@@ -591,6 +642,8 @@ local function markWares()
     markRealUIBags()
   elseif IsAddOnLoaded("Baganator") then
     markBaganatorBags()
+  elseif IsAddOnLoaded("EllesmereUIBags") and EUI_Bags and EUI_Bags.RegisterItemOverlayIcon then
+    markEllesmereUIBags()
   else
     usingDefaultBags = true
     markNormalBags()
@@ -734,7 +787,9 @@ function handlePeddlerItemClick(self, item)
 
   toggleItemPeddling(itemID, uniqueItemID, isSoulbound)
 
+  Peddler.forceRefresh = true
   markWares()
+  Peddler.forceRefresh = false
 end
 
 -- Quest Reward handling.
