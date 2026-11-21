@@ -82,7 +82,7 @@ end
 local function getUniqueItemID(bagNumber, slotNumber)
   local itemString = C_Container.GetContainerItemLink(bagNumber, slotNumber)
   local itemID, uniqueItemID = parseItemString(itemString)
-  local isSoulbound = getIsItemSoulbound(bagNumber, slotNumber)
+  local isSoulbound = SoulboundOnly and getIsItemSoulbound(bagNumber, slotNumber)
 
   return itemID, uniqueItemID, isSoulbound, itemString
 end
@@ -700,6 +700,8 @@ local function overrideItemClickFunction()
   end)
 end
 
+local bagUpdatePending = false
+
 local function handleEvent(self, event, addonName)
   if event == "ADDON_LOADED" and addonName == "Peddler" then
     peddler:UnregisterEvent("ADDON_LOADED")
@@ -716,7 +718,14 @@ local function handleEvent(self, event, addonName)
   elseif event == "PLAYER_ENTERING_WORLD" then
     peddler:RegisterEvent("BAG_UPDATE")
   elseif event == "BAG_UPDATE" then
-    C_Timer.After(1, markWares)
+    if not bagUpdatePending then
+      bagUpdatePending = true
+
+      C_Timer.After(1, function()
+        bagUpdatePending = false
+        markWares()
+      end)
+    end
   elseif event == "MERCHANT_SHOW" then
     peddleGoods()
   end
