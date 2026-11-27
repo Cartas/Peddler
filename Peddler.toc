@@ -1,9 +1,9 @@
 ## Interface: 16001
 ## Title: Peddler
 ## Notes: Automatically sells previously designated items!
-## Author: Cartas @ Bloodfang-Classic
+## Author: Cartas @ EU PvP in Forever
 ## SavedVariables: ModifierKey, SellLimit, Silent, SilenceSaleSummary, IconPlacement
-## SavedVariablesPerCharacter: ItemsToSell, UnmarkedItems, AutoSellGreyItems, AutoSellWhiteItems, AutoSellGreenItems, AutoSellBlueItems, AutoSellPurpleItems, AutoSellUnwantedItems, SoulboundOnly
+## SavedVariablesPerCharacter: ItemsToSell, UnmarkedItems, AutoSellGreyItems, AutoSellWhiteItems, AutoSellGreenItems, AutoSellBlueItems, AutoSellPurpleItems, AutoSellUnwantedItems, SoulboundOnly, ForgetfulMode
 
 vo\WantedItems.lua
 Peddler.lua

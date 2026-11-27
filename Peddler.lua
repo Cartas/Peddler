@@ -134,10 +134,25 @@ function Peddler.itemIsToBeSold(itemID, uniqueItemID, isSoulbound)
   return ItemsToSell[uniqueItemID] or autoSellable
 end
 
+-- Slight delay after selling items,
+-- to sell further stacks/copies of the same item before it is forgotten.
+local FORGET_DELAY = 10
+
+local function forgetSoldItems(soldItems)
+  C_Timer.After(FORGET_DELAY, function()
+    for uniqueItemID, item in pairs(soldItems) do
+      ItemsToSell[uniqueItemID] = nil
+    end
+
+    Peddler.markWares()
+  end)
+end
+
 local function peddleGoods()
   local total = 0
   local sellCount = 0
   local sellDelay = 0
+  local soldItems = {}
 
   for bagNumber = 0, BAG_COUNT do
     local bagsSlotCount = C_Container.GetContainerNumSlots(bagNumber)
@@ -188,6 +203,8 @@ local function peddleGoods()
           PickupMerchantItem()
         end
 
+        soldItems[uniqueItemID] = { itemID = itemID }
+
         sellCount = sellCount + 1
         sellDelay = math.floor(sellCount / 6)
         if (SellLimit and sellCount >= BUYBACK_COUNT) then
@@ -203,6 +220,10 @@ local function peddleGoods()
 
   if total > 0 and not SilenceSaleSummary then
     print("For a total of " .. priceToGold(total))
+  end
+
+  if ForgetfulMode and next(soldItems) then
+    forgetSoldItems(soldItems)
   end
 end
 
@@ -735,7 +756,7 @@ peddler:SetScript("OnEvent", handleEvent)
 
 local function toggleItemPeddling(itemID, uniqueItemID, isSoulbound)
   local _, link, quality, _, _, itemType, subType, _, equipSlot, _, price = GetItemInfo(itemID)
-  if price == 0 then
+  if not price or price <= 0 then
     return
   end
 

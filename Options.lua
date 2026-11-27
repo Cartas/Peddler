@@ -158,12 +158,18 @@ function frame:CreateOptions()
 	clearWaresList:SetText("Clear Items List")
 	clearWaresList:SetScript("PostClick", function(self, button, down)
 		ItemsToSell = {}
+		UnmarkedItems = {}
 		Peddler.markWares()
 	end)
 
 	local clearWaresLabel = self:CreateFontString(nil, nil, "GameFontHighlightSmall")
 	clearWaresLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 19, -450)
 	clearWaresLabel:SetText("Clears the list of items you've manually marked for sale, for this character.")
+
+	local forgetfulMode = createCheckBox(self, title, 18, ForgetfulMode, "Forgetful mode", "Activate this to forget your manually marked items upon selling them to a vendor.")
+	forgetfulMode:SetScript("PostClick", function(self, button, down)
+		ForgetfulMode = self:GetChecked()
+	end)
 
 	if self.refresh ~=nil then self:refresh() end
 end
