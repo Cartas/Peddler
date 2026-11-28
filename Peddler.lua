@@ -87,26 +87,19 @@ local function getUniqueItemID(bagNumber, slotNumber)
   return itemID, uniqueItemID, isSoulbound, itemString
 end
 
-local function isUnwantedItem(itemType, subType, equipSlot)
-  local unwantedItem = false
+local function isUnwantedItem(classID, subclassID, equipSlot)
+  if not AutoSellUnwantedItems then return false end
+  if classID ~= WEAPON and classID ~= ARMOUR then return false end
 
   -- Of course we never want to sell cloaks!
-  local isCloak = equipSlot == 'INVTYPE_CLOAK'
-  if AutoSellUnwantedItems and (itemType == WEAPON or itemType == ARMOUR) and not isCloak then
-    unwantedItem = true
-    for key, value in pairs(WANTED_ITEMS[PLAYERS_CLASS][itemType]) do
-      if subType == value then
-        unwantedItem = false
-        break
-      end
-    end
-  end
+  if equipSlot == 'INVTYPE_CLOAK' then return false end
 
-  return unwantedItem
+  local wanted = WANTED_ITEMS[PLAYERS_CLASS]
+  return not (wanted and wanted[classID] and wanted[classID][subclassID])
 end
 
 function Peddler.itemIsToBeSold(itemID, uniqueItemID, isSoulbound)
-  local _, link, quality, itemLevel, _, itemType, subType, _, equipSlot, _, price = GetItemInfo(itemID)
+  local _, link, quality, itemLevel, _, _, _, _, equipSlot, _, price, classID, subclassID = GetItemInfo(itemID)
 
   -- No price?  No sale!
   if not price or price <= 0 then
@@ -121,7 +114,7 @@ function Peddler.itemIsToBeSold(itemID, uniqueItemID, isSoulbound)
   local unwantedBlue = quality == 3 and AutoSellBlueItems and not unmarkedItem
   local unwantedPurple = quality == 4 and AutoSellPurpleItems and not unmarkedItem
 
-  local unwantedItem = isUnwantedItem(itemType, subType, equipSlot) and not unmarkedItem
+  local unwantedItem = isUnwantedItem(classID, subclassID, equipSlot) and not unmarkedItem
 
   local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedBlue or unwantedPurple or unwantedItem)
 
@@ -755,7 +748,7 @@ end
 peddler:SetScript("OnEvent", handleEvent)
 
 local function toggleItemPeddling(itemID, uniqueItemID, isSoulbound)
-  local _, link, quality, _, _, itemType, subType, _, equipSlot, _, price = GetItemInfo(itemID)
+  local _, link, quality, _, _, _, _, _, equipSlot, _, price, classID, subclassID = GetItemInfo(itemID)
   if not price or price <= 0 then
     return
   end
@@ -766,7 +759,7 @@ local function toggleItemPeddling(itemID, uniqueItemID, isSoulbound)
   local unwantedBlue = quality == 3 and AutoSellBlueItems
   local unwantedPurple = quality == 4 and AutoSellPurpleItems
 
-  local unwantedItem = isUnwantedItem(itemType, subType, equipSlot)
+  local unwantedItem = isUnwantedItem(classID, subclassID, equipSlot)
 
   local autoSellable = (unwantedGrey or unwantedWhite or unwantedGreen or unwantedBlue or unwantedPurple or unwantedItem)
 
