@@ -1,6 +1,6 @@
 local _, Peddler = ...
 
-local frame = CreateFrame("Frame", nil, InterfaceOptionsFramePanelContainer)
+local frame = CreateFrame("Frame")
 local category, layout = Settings.RegisterCanvasLayoutCategory(frame, "Peddler");
 frame.name = "Peddler"
 frame:Hide()
